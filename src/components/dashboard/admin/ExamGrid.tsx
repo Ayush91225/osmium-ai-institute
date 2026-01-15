@@ -9,7 +9,7 @@ import StatusChip from './StatusChip'
 function ExamGrid() {
   const { isDarkMode } = useDarkMode()
   const router = useRouter()
-  const { paginatedExams: filteredExams } = useExams()
+  const { paginatedExams: filteredExams, deleteExam } = useExams()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -47,7 +47,7 @@ function ExamGrid() {
       {filteredExams.map((exam) => (
         <div
           key={exam.id}
-          className={`rounded-2xl p-4 sm:p-5 border duration-200 hover:shadow-md cursor-pointer group ${
+          className={`rounded-2xl p-4 sm:p-5 border duration-200 hover:shadow-md group ${
             isDarkMode 
               ? 'bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-900/70 hover:border-zinc-700/70' 
               : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
@@ -100,19 +100,31 @@ function ExamGrid() {
           <div className={`flex items-center gap-2 pt-3 border-t ${
             isDarkMode ? 'border-zinc-800/50' : 'border-gray-100'
           }`}>
-            <button className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              isDarkMode 
-                ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}>
-              View
+            <button 
+              onClick={() => router.push(`/dashboard/admin/exams/create-paper`)}
+              className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isDarkMode ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              Edit Paper
             </button>
-            <button className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            <button 
+              onClick={() => router.push(`/dashboard/admin/exams/schedule?id=${exam.id}`)}
+              className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               isDarkMode 
                 ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}>
               Edit
+            </button>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation()
+                if (confirm('Delete this test?')) deleteExam(exam.id)
+              }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              isDarkMode 
+                ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30' 
+                : 'bg-red-50 text-red-600 hover:bg-red-100'
+            }`}>
+              <i className="ph ph-trash" />
             </button>
           </div>
         </div>

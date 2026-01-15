@@ -160,6 +160,28 @@ export interface Test {
   totalMarks: number
   status: 'upcoming' | 'ongoing' | 'completed'
   createdAt: string
+  paperId?: string
+}
+
+export interface TestPaper {
+  id: string
+  name: string
+  paperSubjects: string[]
+  questions: Array<{
+    id: string
+    subject: string
+    type: 'mcq' | 'answer'
+    question: string
+    options: string[]
+    correctOption: number
+    correctAnswer?: string
+    marks: number
+  }>
+  defaultMarks: number
+  negativeMarking: boolean
+  negativeMarks: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface StudentTest {
@@ -196,6 +218,7 @@ class DatabaseSimulator {
   private studentAssignments: StudentAssignment[]
   private materials: Material[]
   private tests: Test[]
+  private testPapers: TestPaper[]
   private studentTests: StudentTest[]
   private activities: Activity[]
   private listeners: Map<string, Set<() => void>>
@@ -211,6 +234,7 @@ class DatabaseSimulator {
     this.studentAssignments = this.loadFromStorage('studentAssignments', [])
     this.materials = this.loadFromStorage('materials', [])
     this.tests = this.loadFromStorage('tests', [])
+    this.testPapers = this.loadFromStorage('testPapers', [])
     this.studentTests = this.loadFromStorage('studentTests', [])
     this.activities = this.loadFromStorage('activities', [])
     this.listeners = new Map()
@@ -710,6 +734,28 @@ class DatabaseSimulator {
     if (material) {
       this.updateMaterial(id, { downloads: material.downloads + 1 })
     }
+  }
+
+  // Test Papers
+  getTestPapers() { return [...this.testPapers] }
+  getTestPaper(id: string) { return this.testPapers.find(p => p.id === id) }
+  addTestPaper(paper: TestPaper) {
+    this.testPapers.push(paper)
+    this.saveToStorage('testPapers', this.testPapers)
+    this.notify('testPapers')
+  }
+  updateTestPaper(id: string, updates: Partial<TestPaper>) {
+    const index = this.testPapers.findIndex(p => p.id === id)
+    if (index !== -1) {
+      this.testPapers[index] = { ...this.testPapers[index], ...updates, updatedAt: new Date().toISOString() }
+      this.saveToStorage('testPapers', this.testPapers)
+      this.notify('testPapers')
+    }
+  }
+  deleteTestPaper(id: string) {
+    this.testPapers = this.testPapers.filter(p => p.id !== id)
+    this.saveToStorage('testPapers', this.testPapers)
+    this.notify('testPapers')
   }
 
   // Tests

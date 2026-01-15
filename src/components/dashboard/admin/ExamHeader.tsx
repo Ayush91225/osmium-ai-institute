@@ -76,7 +76,10 @@ function ExamHeader() {
             <i className="ph ph-sparkle mr-2 text-sm" />
             AI Generator
           </button>
-          <button className="px-4 py-3 bg-[#8C7B65] hover:bg-[#7A6B58] text-white rounded-xl text-sm font-medium duration-200 shadow-sm hover:shadow-md flex items-center justify-center">
+          <button
+            onClick={() => router.push('/dashboard/admin/exams/schedule')}
+            className="px-4 py-3 bg-[#8C7B65] hover:bg-[#7A6B58] text-white rounded-xl text-sm font-medium duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
+          >
             <i className="ph ph-plus mr-2 text-sm" />
             Schedule Test
           </button>

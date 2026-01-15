@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react'
+import { getDatabase } from '@/lib/database'
 
 export interface Exam {
   id: string
@@ -81,17 +82,88 @@ export function ExamProvider({ children }: { children: ReactNode }) {
   const [itemsPerPage] = useState(6)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('exams')
-      setExams(stored ? JSON.parse(stored) : mockExams)
+    const db = getDatabase()
+    if (db) {
+      const tests = db.getTests()
+      const subjects = db.getSubjects()
+      const classes = db.getClasses()
+      
+      const mappedExams: Exam[] = tests.map(test => {
+        const subject = subjects.find(s => s.id === test.subjectId)
+        const cls = classes.find(c => c.id === test.classId)
+        const classStudents = cls ? cls.currentStrength : 0
+        
+        let status: 'Published' | 'Active' | 'Draft' | 'Scheduled' | 'Live' | 'Completed' = 'Scheduled'
+        if (test.status === 'upcoming') status = 'Scheduled'
+        else if (test.status === 'ongoing') status = 'Live'
+        else if (test.status === 'completed') status = 'Completed'
+        
+        return {
+          id: test.id,
+          name: test.title,
+          subject: subject?.name || 'Unknown',
+          subjectId: test.subjectId,
+          classId: test.classId,
+          className: cls?.name,
+          teacherId: test.teacherId,
+          date: test.date,
+          questions: 0,
+          duration: test.duration,
+          students: classStudents,
+          totalMarks: test.totalMarks,
+          status,
+          isAI: false,
+          type: test.type,
+          createdAt: test.createdAt,
+          createdBy: 'Admin',
+          updatedAt: test.createdAt
+        }
+      })
+      
+      setExams(mappedExams.length > 0 ? mappedExams : mockExams)
+      
+      // Subscribe to test updates
+      const unsubscribe = db.subscribe('tests', () => {
+        const updatedTests = db.getTests()
+        const updatedExams: Exam[] = updatedTests.map(test => {
+          const subject = subjects.find(s => s.id === test.subjectId)
+          const cls = classes.find(c => c.id === test.classId)
+          const classStudents = cls ? cls.currentStrength : 0
+          
+          let status: 'Published' | 'Active' | 'Draft' | 'Scheduled' | 'Live' | 'Completed' = 'Scheduled'
+          if (test.status === 'upcoming') status = 'Scheduled'
+          else if (test.status === 'ongoing') status = 'Live'
+          else if (test.status === 'completed') status = 'Completed'
+          
+          return {
+            id: test.id,
+            name: test.title,
+            subject: subject?.name || 'Unknown',
+            subjectId: test.subjectId,
+            classId: test.classId,
+            className: cls?.name,
+            teacherId: test.teacherId,
+            date: test.date,
+            questions: 0,
+            duration: test.duration,
+            students: classStudents,
+            totalMarks: test.totalMarks,
+            status,
+            isAI: false,
+            type: test.type,
+            createdAt: test.createdAt,
+            createdBy: 'Admin',
+            updatedAt: test.createdAt
+          }
+        })
+        setExams(updatedExams.length > 0 ? updatedExams : mockExams)
+      })
+      
+      return unsubscribe
     }
   }, [])
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && exams.length > 0) {
-      localStorage.setItem('exams', JSON.stringify(exams))
-    }
-  }, [exams])
+
 
   const filteredExams = useMemo(() => {
     return exams.filter(exam => {
@@ -130,7 +202,11 @@ export function ExamProvider({ children }: { children: ReactNode }) {
     updateExam: (id: string, updates: Partial<Exam>) => {
       setExams(prev => prev.map(e => e.id === id ? { ...e, ...updates, updatedAt: new Date().toISOString() } : e))
     },
-    deleteExam: (id: string) => setExams(prev => prev.filter(e => e.id !== id)),
+    deleteExam: (id: string) => {
+      const db = getDatabase()
+      if (db) db.updateTest(id, { status: 'completed' })
+      setExams(prev => prev.filter(e => e.id !== id))
+    },
     setSearchTerm,
     setSelectedSubject,
     setSelectedStatus,

@@ -411,18 +411,6 @@ export default function TeacherProfilePage() {
                         <i className="ph ph-clipboard-text text-lg" />
                         Assignments
                       </h3>
-                      <div className="flex gap-2">
-                        <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${isDarkMode ? 'bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-200 border border-zinc-700' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
-                          }`}>
-                          <i className="ph ph-upload" />
-                          Upload
-                        </button>
-                        <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${isDarkMode ? 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white' : 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white'
-                          }`}>
-                          <i className="ph ph-sparkle" />
-                          Generate
-                        </button>
-                      </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {[
@@ -435,7 +423,10 @@ export default function TeacherProfilePage() {
                         { id: 'ASG007', title: 'Chemistry Equations', class: 'Grade 11B', dueDate: '2024-01-10', submitted: 38, total: 40, status: 'completed' },
                         { id: 'ASG008', title: 'Math Quiz Prep', class: 'Grade 9B', dueDate: '2024-01-08', submitted: 30, total: 32, status: 'completed' }
                       ].slice((assignmentsPage - 1) * fileItemsPerPage, assignmentsPage * fileItemsPerPage).map((assignment, index) => (
-                        <div key={index} className={`group relative p-4 rounded-xl border text-left transition-all hover:shadow-lg hover:scale-[1.02] ${isDarkMode ? 'bg-zinc-800/40 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700' : 'bg-gray-50/80 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                        <div 
+                          key={index} 
+                          onClick={() => router.push(`/dashboard/admin/teachers/profile/${teacher.id}/assignments/${assignment.id}`)}
+                          className={`group relative p-4 rounded-xl border text-left transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer ${isDarkMode ? 'bg-zinc-800/40 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700' : 'bg-gray-50/80 border-gray-200/80 hover:bg-white hover:border-gray-300'
                           }`}>
                           <button
                             onClick={() => {
@@ -494,18 +485,6 @@ export default function TeacherProfilePage() {
                         <i className="ph ph-folder-open text-lg" />
                         Study Materials
                       </h3>
-                      <div className="flex gap-2">
-                        <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${isDarkMode ? 'bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-200 border border-zinc-700' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
-                          }`}>
-                          <i className="ph ph-upload" />
-                          Upload
-                        </button>
-                        <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${isDarkMode ? 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white' : 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white'
-                          }`}>
-                          <i className="ph ph-sparkle" />
-                          Generate
-                        </button>
-                      </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {teacher.subjects.map((subject: string, idx: number) => [
@@ -514,7 +493,10 @@ export default function TeacherProfilePage() {
                         { id: `MAT${idx}03`, title: `${subject} - Study Guide.pdf`, type: 'PDF', size: '2.4 MB', views: 98 + idx * 10, uploadDate: `2024-01-${15 - idx * 3}` },
                         { id: `MAT${idx}04`, title: `${subject} - Complete Course`, type: 'Page', views: 112 + idx * 12, uploadDate: `2024-01-${12 - idx * 3}` }
                       ]).flat().slice((materialsPage - 1) * fileItemsPerPage, materialsPage * fileItemsPerPage).map((material: any, index: number) => (
-                        <div key={index} className={`group relative p-4 rounded-xl border text-left transition-all hover:shadow-lg hover:scale-[1.02] ${isDarkMode ? 'bg-zinc-800/40 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700' : 'bg-gray-50/80 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                        <div 
+                          key={index} 
+                          onClick={() => router.push(`/dashboard/admin/teachers/profile/${teacher.id}/materials/${material.id}`)}
+                          className={`group relative p-4 rounded-xl border text-left transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer ${isDarkMode ? 'bg-zinc-800/40 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700' : 'bg-gray-50/80 border-gray-200/80 hover:bg-white hover:border-gray-300'
                           }`}>
                           <button
                             onClick={() => {
