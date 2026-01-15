@@ -20,7 +20,7 @@ const adminNavigationItems = [
   { href: '/dashboard/admin/students', icon: 'ph-users', label: 'Students' },
   { href: '/dashboard/admin/classes', icon: 'ph-graduation-cap', label: 'Classes' },
   { href: '/dashboard/admin/subjects', icon: 'ph-books', label: 'Subjects' },
-  { href: '/dashboard/exams', icon: 'ph-exam', label: 'Exam & Tests' },
+  { href: '/dashboard/admin/exams', icon: 'ph-exam', label: 'Exam & Tests' },
 ]
 
 const studentNavigationItems = [
