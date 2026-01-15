@@ -8,10 +8,9 @@ import MobileToggle from './MobileToggle'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  role?: 'admin' | 'student' | 'teacher'
 }
 
-export default function DashboardLayout({ children, role = 'admin' }: DashboardLayoutProps) {
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -44,26 +43,24 @@ export default function DashboardLayout({ children, role = 'admin' }: DashboardL
   }, [sidebarOpen])
 
   return (
-    <div className={`min-h-screen h-full ${
-      mounted && isDarkMode ? 'bg-zinc-950/95' : 'bg-bg'
-    }`}>
-      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} role={role} />
-      
+    <div className={`min-h-screen h-full ${mounted && isDarkMode ? 'bg-zinc-950/95' : 'bg-bg'
+      }`}>
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+
       {/* Mobile Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={closeSidebar}
           aria-hidden="true"
         />
       )}
-      
+
       {/* Main Content */}
-      <main className={`h-screen overflow-hidden p-0 lg:ml-[280px] relative ${
-        mounted && isDarkMode ? 'text-zinc-100 bg-zinc-950/95' : 'text-gray-900 bg-bg'
-      }`}>
+      <main className={`min-h-screen overflow-y-auto p-4 md:p-8 lg:p-12 lg:ml-[280px] relative scroll-smooth will-change-transform ${mounted && isDarkMode ? 'text-zinc-100 bg-zinc-950/95' : 'text-gray-900 bg-bg'
+        }`}>
         <MobileToggle onClick={toggleSidebar} />
-        
+
         {children}
       </main>
     </div>
