@@ -17,8 +17,8 @@ const navigationItems = [
   { href: '/dashboard/admin/teachers', icon: 'ph-chalkboard-teacher', label: 'Teachers' },
   { href: '/dashboard/admin/approvals', icon: 'ph-clock', label: 'Pending Approvals' },
   { href: '/dashboard/admin/students', icon: 'ph-users', label: 'Students' },
-  { href: '/dashboard/subjects', icon: 'ph-books', label: 'Subjects' },
-  { href: '/dashboard/classes', icon: 'ph-graduation-cap', label: 'Classes' },
+  { href: '/dashboard/admin/classes', icon: 'ph-graduation-cap', label: 'Classes' },
+  { href: '/dashboard/admin/subjects', icon: 'ph-books', label: 'Subjects' },
   { href: '/dashboard/exams', icon: 'ph-exam', label: 'Exam & Tests' },
 ]
 

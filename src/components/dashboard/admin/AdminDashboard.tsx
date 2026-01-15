@@ -1,11 +1,21 @@
 'use client'
 
 import { memo } from 'react'
+import { useStudents } from '@/contexts/StudentContext'
+import { useTeachers } from '@/contexts/TeacherContext'
+import { useClasses } from '@/contexts/ClassContext'
 import DashboardHeader from './DashboardHeader'
 import StatsSection from './StatsSection'
 import DashboardGrid from './DashboardGrid'
 
 function AdminDashboard() {
+  const { stats: studentStats } = useStudents()
+  const { stats: teacherStats } = useTeachers()
+  const { stats: classStats, subjects } = useClasses()
+  
+  // Calculate total assigned subjects across all classes
+  const totalAssignedSubjects = subjects.length
+  
   return (
     <div className="space-y-6 md:space-y-8">
       <DashboardHeader />
@@ -19,8 +29,8 @@ function AdminDashboard() {
           </div>
           <div className="stat-content">
             <div className="stat-title">Total Students</div>
-            <div className="stat-value">0</div>
-            <span className="stat-extra stat-extra-green">+12% vs last month</span>
+            <div className="stat-value">{studentStats.total}</div>
+            <span className="stat-extra stat-extra-green">{studentStats.active} active • {studentStats.classes} classes</span>
           </div>
         </div>
         <div className="stat-divider"></div>
@@ -33,8 +43,8 @@ function AdminDashboard() {
           </div>
           <div className="stat-content">
             <div className="stat-title">Total Teachers</div>
-            <div className="stat-value">0</div>
-            <span className="stat-extra stat-extra-green">+4% vs last month</span>
+            <div className="stat-value">{teacherStats.total}</div>
+            <span className="stat-extra stat-extra-green">{teacherStats.active} active • {teacherStats.departments} depts</span>
           </div>
         </div>
         <div className="stat-divider"></div>
@@ -47,8 +57,8 @@ function AdminDashboard() {
           </div>
           <div className="stat-content">
             <div className="stat-title">Total Classes</div>
-            <div className="stat-value">48</div>
-            <span className="stat-extra stat-extra-green">+2% vs last month</span>
+            <div className="stat-value">{classStats.total}</div>
+            <span className="stat-extra stat-extra-green">{classStats.active} active • {classStats.branches} locations</span>
           </div>
         </div>
         <div className="stat-divider"></div>
@@ -60,9 +70,9 @@ function AdminDashboard() {
             </svg>
           </div>
           <div className="stat-content">
-            <div className="stat-title">Assigned Subjects</div>
-            <div className="stat-value">234</div>
-            <span className="stat-extra stat-extra-orange">-3% vs last month</span>
+            <div className="stat-title">Total Subjects</div>
+            <div className="stat-value">{totalAssignedSubjects}</div>
+            <span className="stat-extra stat-extra-green">{classStats.courses} programs</span>
           </div>
         </div>
       </div>

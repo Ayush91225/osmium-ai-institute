@@ -2,6 +2,11 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { StudentProvider } from '@/contexts/StudentContext'
+import { TeacherProvider } from '@/contexts/TeacherContext'
+import { ClassProvider } from '@/contexts/ClassContext'
+import { ApprovalProvider } from '@/contexts/ApprovalContext'
+import { NotificationProvider } from '@/contexts/NotificationContext'
+import { UnifiedDataProvider } from '@/contexts/UnifiedDataContext'
 import AdminDashboard from '@/components/dashboard/admin/AdminDashboard'
 import LoadingSpinner from '@/components/dashboard/shared/LoadingSpinner'
 import '@/assets/css/dashboard/admin.css'
@@ -20,12 +25,22 @@ export const metadata: Metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <StudentProvider>
-      <DashboardLayout>
-        <Suspense fallback={<LoadingSpinner />}>
-          <AdminDashboard />
-        </Suspense>
-      </DashboardLayout>
-    </StudentProvider>
+    <ClassProvider>
+      <TeacherProvider>
+        <StudentProvider>
+          <ApprovalProvider>
+            <NotificationProvider>
+              <UnifiedDataProvider>
+                <DashboardLayout>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <AdminDashboard />
+                  </Suspense>
+                </DashboardLayout>
+              </UnifiedDataProvider>
+            </NotificationProvider>
+          </ApprovalProvider>
+        </StudentProvider>
+      </TeacherProvider>
+    </ClassProvider>
   )
 }

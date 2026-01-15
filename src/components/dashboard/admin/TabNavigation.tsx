@@ -11,7 +11,7 @@ interface Tab {
 interface TabNavigationProps {
   activeTab: string
   onTabChange: (tabId: string) => void
-  type?: 'student' | 'teacher'
+  type?: 'student' | 'teacher' | 'subject'
 }
 
 export default function TabNavigation({ activeTab, onTabChange, type = 'student' }: TabNavigationProps) {
@@ -29,10 +29,18 @@ export default function TabNavigation({ activeTab, onTabChange, type = 'student'
   const teacherTabs: Tab[] = [
     { id: 'overview', label: 'Overview', icon: 'ph-user' },
     { id: 'academic', label: 'Academic', icon: 'ph-book-open' },
+    { id: 'assignments', label: 'Assignments', icon: 'ph-clipboard-text' },
+    { id: 'materials', label: 'Study Material', icon: 'ph-file-text' },
+    { id: 'tests', label: 'Exams', icon: 'ph-exam' },
     { id: 'activities', label: 'Activities', icon: 'ph-clock-clockwise' }
   ]
 
-  const tabs = type === 'teacher' ? teacherTabs : studentTabs
+  const subjectTabs: Tab[] = [
+    { id: 'overview', label: 'Overview', icon: 'ph-info' },
+    { id: 'academic', label: 'Academic', icon: 'ph-book-open' }
+  ]
+
+  const tabs = type === 'subject' ? subjectTabs : type === 'teacher' ? teacherTabs : studentTabs
 
   return (
     <div className={`rounded-2xl border ${

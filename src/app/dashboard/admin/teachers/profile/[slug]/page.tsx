@@ -7,6 +7,7 @@ import { useTeachers } from '@/contexts/TeacherContext'
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout'
 import TeacherProfileHeader from '@/components/dashboard/admin/TeacherProfileHeader'
 import TabNavigation from '@/components/dashboard/admin/TabNavigation'
+import BlurredImage from '@/components/BlurredImage'
 
 export default function TeacherProfilePage() {
   const params = useParams()
@@ -15,7 +16,17 @@ export default function TeacherProfilePage() {
   const { teachers } = useTeachers()
   const [teacher, setTeacher] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('overview')
+  const [testTab, setTestTab] = useState('exams')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [assignmentsPage, setAssignmentsPage] = useState(1)
+  const [materialsPage, setMaterialsPage] = useState(1)
   const [mounted, setMounted] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ email: '', phone: '', address: '', gender: '', dateOfBirth: '', emergencyContact: '', department: '' })
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [fileToDelete, setFileToDelete] = useState<{id: string, title: string, type: 'assignment' | 'material'} | null>(null)
+  const itemsPerPage = 4
+  const fileItemsPerPage = 6
 
   useEffect(() => {
     setMounted(true)
@@ -23,24 +34,58 @@ export default function TeacherProfilePage() {
     const foundTeacher = teachers.find(t => t.id === teacherId)
     
     if (foundTeacher) {
+      // Calculate real student count from classes
+      const db = typeof window !== 'undefined' ? require('@/lib/database').getDatabase() : null
+      const allStudents = db ? db.getStudents() : []
+      const teacherStudentCount = allStudents.filter((s: any) => 
+        foundTeacher.classes.some((c: string) => s.class === c)
+      ).length
+      
       const enhancedTeacher = {
         ...foundTeacher,
-        dateOfBirth: '1985-03-12',
-        gender: 'Female',
-        address: '123 Academic Street, Education City',
-        emergencyContact: '+1 234-567-8999',
+        dateOfBirth: (foundTeacher as any).dateOfBirth || '1985-03-12',
+        gender: (foundTeacher as any).gender || 'Female',
+        address: (foundTeacher as any).address || '123 Academic Street, Education City',
+        emergencyContact: (foundTeacher as any).emergencyContact || '+1 234-567-8999',
         description: `Experienced ${foundTeacher.department.toLowerCase()} educator with expertise in ${foundTeacher.subjects.join(', ')}. Passionate about making complex concepts accessible to students.`,
         specialities: foundTeacher.subjects.concat(['Research Methodology', 'Student Mentoring']),
-        totalStudents: 120,
+        totalStudents: teacherStudentCount,
         totalExams: 45,
         totalMaterials: 78,
         totalAssignments: 156
       }
       setTeacher(enhancedTeacher)
+      setEditForm({
+        email: enhancedTeacher.email,
+        phone: enhancedTeacher.phone,
+        address: enhancedTeacher.address,
+        gender: enhancedTeacher.gender,
+        dateOfBirth: enhancedTeacher.dateOfBirth,
+        emergencyContact: enhancedTeacher.emergencyContact,
+        department: enhancedTeacher.department
+      })
     } else {
       setTeacher(null)
     }
   }, [params.slug, teachers])
+
+  const handleSaveEdit = () => {
+    const db = typeof window !== 'undefined' ? require('@/lib/database').getDatabase() : null
+    if (db) {
+      db.updateTeacher(teacher.id, editForm)
+    }
+    setTeacher({ ...teacher, ...editForm })
+    setIsEditing(false)
+  }
+
+  const handleDeleteFile = () => {
+    if (fileToDelete) {
+      // Delete logic here - would integrate with database
+      console.log(`Deleting ${fileToDelete.type}: ${fileToDelete.id}`)
+      setDeleteModalOpen(false)
+      setFileToDelete(null)
+    }
+  }
 
   if (!mounted) return null
 
@@ -67,10 +112,60 @@ export default function TeacherProfilePage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
+    <>
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && fileToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className={`w-full max-w-md rounded-2xl border p-6 ${
+            isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-200'
+          }`}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                <i className="ph ph-warning text-2xl text-red-500" />
+              </div>
+              <div>
+                <h3 className={`text-lg font-semibold ${
+                  isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                }`}>Delete {fileToDelete.type === 'assignment' ? 'Assignment' : 'Material'}?</h3>
+                <p className={`text-sm ${
+                  isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                }`}>This action cannot be undone</p>
+              </div>
+            </div>
+            <p className={`text-sm mb-6 ${
+              isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+            }`}>
+              Are you sure you want to delete <span className="font-semibold">"{fileToDelete.title}"</span>?
+              {fileToDelete.type === 'assignment' && ' All student submissions will also be deleted.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false)
+                  setFileToDelete(null)
+                }}
+                className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteFile}
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-all"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <DashboardLayout>
+        <div className="max-w-7xl mx-auto space-y-6">
+
         {/* Teacher Header Card */}
-        <TeacherProfileHeader teacher={teacher} />
+        <TeacherProfileHeader teacher={teacher} onEditClick={() => setIsEditing(!isEditing)} />
 
         {/* Navigation Tabs */}
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} type="teacher" />
@@ -87,22 +182,29 @@ export default function TeacherProfilePage() {
                     ? 'bg-zinc-900/60 border-zinc-800/40' 
                     : 'bg-white/80 border-gray-200/60'
                 }`}>
-                  <h3 className={`text-base font-semibold mb-3 flex items-center gap-2 ${
-                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                  }`}>
-                    <i className="ph ph-address-book text-sm" />
-                    Contact Information
-                  </h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className={`text-base font-semibold flex items-center gap-2 ${
+                      isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                    }`}>
+                      <i className="ph ph-address-book text-sm" />
+                      Contact Information
+                    </h3>
+                    {isEditing && (
+                      <button onClick={handleSaveEdit} className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[#8C7B65] hover:bg-[#7A6B57] text-white">
+                        Save Changes
+                      </button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {[
-                      { label: 'Email', value: teacher.email, icon: 'ph ph-envelope' },
-                      { label: 'Phone', value: teacher.phone, icon: 'ph ph-phone' },
-                      { label: 'Address', value: teacher.address || 'Not provided', icon: 'ph ph-map-pin' },
-                      { label: 'Gender', value: teacher.gender || 'Not specified', icon: 'ph ph-user' },
-                      { label: 'Date of Birth', value: new Date(teacher.dateOfBirth).toLocaleDateString(), icon: 'ph ph-cake' },
-                      { label: 'Emergency Contact', value: teacher.emergencyContact || 'Not provided', icon: 'ph ph-phone-call' },
-                      { label: 'Department', value: teacher.department, icon: 'ph ph-buildings' },
-                      { label: 'Joining Date', value: new Date(teacher.joiningDate).toLocaleDateString(), icon: 'ph ph-calendar' }
+                      { label: 'Email', value: editForm.email, icon: 'ph ph-envelope', editable: true, field: 'email', type: 'email' },
+                      { label: 'Phone', value: editForm.phone, icon: 'ph ph-phone', editable: true, field: 'phone', type: 'tel' },
+                      { label: 'Address', value: editForm.address || 'Not provided', icon: 'ph ph-map-pin', editable: true, field: 'address', type: 'text' },
+                      { label: 'Gender', value: editForm.gender || 'Not specified', icon: 'ph ph-user', editable: true, field: 'gender', type: 'text' },
+                      { label: 'Date of Birth', value: editForm.dateOfBirth ? new Date(editForm.dateOfBirth).toLocaleDateString() : 'Not provided', icon: 'ph ph-cake', editable: true, field: 'dateOfBirth', type: 'date' },
+                      { label: 'Emergency Contact', value: editForm.emergencyContact || 'Not provided', icon: 'ph ph-phone-call', editable: true, field: 'emergencyContact', type: 'tel' },
+                      { label: 'Department', value: editForm.department, icon: 'ph ph-buildings', editable: true, field: 'department', type: 'text' },
+                      { label: 'Joining Date', value: new Date(teacher.joiningDate).toLocaleDateString(), icon: 'ph ph-calendar', editable: false }
                     ].map((item, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -112,13 +214,35 @@ export default function TeacherProfilePage() {
                             isDarkMode ? 'text-zinc-400' : 'text-gray-500'
                           }`} />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className={`text-xs font-medium ${
                             isDarkMode ? 'text-zinc-400' : 'text-gray-500'
                           }`}>{item.label}</p>
-                          <p className={`text-xs font-medium ${
-                            isDarkMode ? 'text-zinc-200' : 'text-gray-900'
-                          }`}>{item.value}</p>
+                          {isEditing && item.editable ? (
+                            item.type === 'date' ? (
+                              <input
+                                type="date"
+                                value={typeof item.value === 'string' && item.value.includes('/') ? item.value.split('/').reverse().join('-') : (typeof item.value === 'string' ? item.value : '')}
+                                onChange={(e) => setEditForm({...editForm, [item.field!]: e.target.value})}
+                                className={`text-xs font-medium w-full px-2 py-1 rounded border ${
+                                  isDarkMode ? 'bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-white border-gray-300 text-gray-900'
+                                }`}
+                              />
+                            ) : (
+                              <input
+                                type={item.type}
+                                value={item.value}
+                                onChange={(e) => setEditForm({...editForm, [item.field!]: e.target.value})}
+                                className={`text-xs font-medium w-full px-2 py-1 rounded border ${
+                                  isDarkMode ? 'bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-white border-gray-300 text-gray-900'
+                                }`}
+                              />
+                            )
+                          ) : (
+                            <p className={`text-xs font-medium ${
+                              isDarkMode ? 'text-zinc-200' : 'text-gray-900'
+                            }`}>{item.value}</p>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -227,33 +351,34 @@ export default function TeacherProfilePage() {
                     Teaching Performance
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { subject: 'Mathematics', avgScore: 87, students: 45, satisfaction: 4.6 },
-                      { subject: 'Physics', avgScore: 84, students: 38, satisfaction: 4.4 },
-                      { subject: 'Chemistry', avgScore: 89, students: 37, satisfaction: 4.7 }
-                    ].map((perf, index) => (
-                      <div key={index} className={`p-3 rounded-lg ${
-                        isDarkMode ? 'bg-zinc-800/30' : 'bg-gray-50/50'
-                      }`}>
-                        <h4 className={`text-sm font-semibold mb-2 ${
-                          isDarkMode ? 'text-zinc-200' : 'text-gray-900'
-                        }`}>{perf.subject}</h4>
-                        <div className="space-y-2 text-xs">
-                          <div className="flex justify-between">
-                            <span className={`${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Avg Score:</span>
-                            <span className={`font-medium ${isDarkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{perf.avgScore}%</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className={`${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Students:</span>
-                            <span className={`font-medium ${isDarkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{perf.students}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className={`${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Rating:</span>
-                            <span className={`font-medium ${isDarkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{perf.satisfaction}/5.0</span>
+                    {teacher.subjects.slice(0, 3).map((subject: string, index: number) => {
+                      const avgScore = 85 + Math.floor(Math.random() * 10)
+                      const students = 35 + Math.floor(Math.random() * 15)
+                      const satisfaction = 4.3 + Math.random() * 0.6
+                      return (
+                        <div key={index} className={`p-3 rounded-lg ${
+                          isDarkMode ? 'bg-zinc-800/30' : 'bg-gray-50/50'
+                        }`}>
+                          <h4 className={`text-sm font-semibold mb-2 ${
+                            isDarkMode ? 'text-zinc-200' : 'text-gray-900'
+                          }`}>{subject}</h4>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between">
+                              <span className={`${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Avg Score:</span>
+                              <span className={`font-medium ${isDarkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{avgScore}%</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className={`${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Students:</span>
+                              <span className={`font-medium ${isDarkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{students}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className={`${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Rating:</span>
+                              <span className={`font-medium ${isDarkMode ? 'text-zinc-200' : 'text-gray-900'}`}>{satisfaction.toFixed(1)}/5.0</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -270,30 +395,298 @@ export default function TeacherProfilePage() {
                     Course Materials
                   </h3>
                   <div className="space-y-2">
-                    {[
-                      { name: 'Advanced Calculus Notes', subject: 'Mathematics', downloads: 156, date: '2024-01-15' },
-                      { name: 'Physics Lab Manual', subject: 'Physics', downloads: 89, date: '2024-01-12' },
-                      { name: 'Organic Chemistry Guide', subject: 'Chemistry', downloads: 134, date: '2024-01-10' }
-                    ].map((material, index) => (
-                      <div key={index} className={`p-3 rounded-lg ${
-                        isDarkMode ? 'bg-zinc-800/30' : 'bg-gray-50/50'
-                      }`}>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className={`text-xs font-medium ${
-                              isDarkMode ? 'text-zinc-200' : 'text-gray-900'
-                            }`}>{material.name}</h4>
-                            <p className={`text-xs ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
-                              {material.subject} • {material.downloads} downloads
-                            </p>
+                    {teacher.subjects.slice(0, 3).map((subject: string, index: number) => {
+                      const downloads = 80 + Math.floor(Math.random() * 100)
+                      const daysAgo = index * 2 + 3
+                      const date = new Date()
+                      date.setDate(date.getDate() - daysAgo)
+                      const material = {
+                        name: `${subject} Study Guide`,
+                        subject: subject,
+                        downloads: downloads,
+                        date: date.toISOString().split('T')[0]
+                      }
+                      return (
+                        <div key={index} className={`p-3 rounded-lg ${
+                          isDarkMode ? 'bg-zinc-800/30' : 'bg-gray-50/50'
+                        }`}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className={`text-xs font-medium ${
+                                isDarkMode ? 'text-zinc-200' : 'text-gray-900'
+                              }`}>{material.name}</h4>
+                              <p className={`text-xs ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                                {material.subject} • {material.downloads} downloads
+                              </p>
+                            </div>
+                            <span className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                              {new Date(material.date).toLocaleDateString()}
+                            </span>
                           </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'assignments' && (
+              <>
+                {/* Assignments - Premium File Manager */}
+                <div className={`p-6 rounded-xl border ${
+                  isDarkMode 
+                    ? 'bg-zinc-900/60 border-zinc-800/40' 
+                    : 'bg-white/80 border-gray-200/60'
+                }`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className={`text-lg font-semibold flex items-center gap-2 ${
+                      isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                    }`}>
+                      <i className="ph ph-clipboard-text text-lg" />
+                      Assignments
+                    </h3>
+                    <div className="flex gap-2">
+                      <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
+                        isDarkMode ? 'bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-200 border border-zinc-700' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                      }`}>
+                        <i className="ph ph-upload" />
+                        Upload
+                      </button>
+                      <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
+                        isDarkMode ? 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white' : 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white'
+                      }`}>
+                        <i className="ph ph-sparkle" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      { id: 'ASG001', title: 'Calculus Problem Set #15', class: 'Grade 12A', dueDate: '2024-01-25', submitted: 38, total: 42, status: 'active' },
+                      { id: 'ASG002', title: 'Wave Motion Analysis', class: 'Grade 11B', dueDate: '2024-01-22', submitted: 35, total: 40, status: 'active' },
+                      { id: 'ASG003', title: 'Organic Chemistry Lab', class: 'Grade 10A', dueDate: '2024-01-20', submitted: 45, total: 45, status: 'completed' },
+                      { id: 'ASG004', title: 'Trigonometry Practice', class: 'Grade 11A', dueDate: '2024-01-18', submitted: 32, total: 35, status: 'grading' },
+                      { id: 'ASG005', title: 'Physics Mechanics', class: 'Grade 12A', dueDate: '2024-01-15', submitted: 40, total: 42, status: 'completed' },
+                      { id: 'ASG006', title: 'Algebra Worksheet', class: 'Grade 10A', dueDate: '2024-01-12', submitted: 43, total: 45, status: 'completed' },
+                      { id: 'ASG007', title: 'Chemistry Equations', class: 'Grade 11B', dueDate: '2024-01-10', submitted: 38, total: 40, status: 'completed' },
+                      { id: 'ASG008', title: 'Math Quiz Prep', class: 'Grade 9B', dueDate: '2024-01-08', submitted: 30, total: 32, status: 'completed' }
+                    ].slice((assignmentsPage - 1) * fileItemsPerPage, assignmentsPage * fileItemsPerPage).map((assignment, index) => (
+                      <div key={index} className={`group relative p-4 rounded-xl border text-left transition-all hover:shadow-lg hover:scale-[1.02] ${
+                        isDarkMode ? 'bg-zinc-800/40 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700' : 'bg-gray-50/80 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                      }`}>
+                        <button
+                          onClick={() => {
+                            setFileToDelete({ id: assignment.id, title: assignment.title, type: 'assignment' })
+                            setDeleteModalOpen(true)
+                          }}
+                          className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all ${
+                            isDarkMode ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400' : 'bg-red-50 hover:bg-red-100 text-red-600'
+                          }`}
+                        >
+                          <i className="ph ph-trash text-sm" />
+                        </button>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all group-hover:scale-110 ${
+                          isDarkMode ? 'bg-zinc-700/50' : 'bg-gray-200'
+                        }`}>
+                          <i className={`ph ph-clipboard-text text-xl ${
+                            isDarkMode ? 'text-zinc-400' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <h4 className={`text-sm font-semibold mb-2 line-clamp-2 min-h-[2.5rem] ${
+                          isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                        }`}>{assignment.title}</h4>
+                        <p className={`text-xs mb-2 ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                          {assignment.class}
+                        </p>
+                        <div className={`flex items-center justify-between pt-2 border-t ${
+                          isDarkMode ? 'border-zinc-700/50' : 'border-gray-200'
+                        }`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            isDarkMode ? 'bg-zinc-700/50 text-zinc-300' : 'bg-gray-200 text-gray-700'
+                          }`}>{assignment.submitted}/{assignment.total}</span>
                           <span className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
-                            {new Date(material.date).toLocaleDateString()}
+                            {new Date(assignment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </span>
                         </div>
                       </div>
                     ))}
                   </div>
+                  <div className="flex justify-center items-center gap-2 mt-6">
+                    <button onClick={() => setAssignmentsPage(p => Math.max(1, p - 1))} disabled={assignmentsPage === 1} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${assignmentsPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} ${isDarkMode ? 'bg-zinc-800/60 text-zinc-300' : 'bg-gray-200 text-gray-700'}`}>
+                      <i className="ph ph-caret-left" />
+                    </button>
+                    <span className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Page {assignmentsPage} of 2</span>
+                    <button onClick={() => setAssignmentsPage(p => Math.min(2, p + 1))} disabled={assignmentsPage === 2} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${assignmentsPage === 2 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} ${isDarkMode ? 'bg-zinc-800/60 text-zinc-300' : 'bg-gray-200 text-gray-700'}`}>
+                      <i className="ph ph-caret-right" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'materials' && (
+              <>
+                {/* Study Materials - Premium File Manager */}
+                <div className={`p-6 rounded-xl border ${
+                  isDarkMode 
+                    ? 'bg-zinc-900/60 border-zinc-800/40' 
+                    : 'bg-white/80 border-gray-200/60'
+                }`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className={`text-lg font-semibold flex items-center gap-2 ${
+                      isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                    }`}>
+                      <i className="ph ph-folder-open text-lg" />
+                      Study Materials
+                    </h3>
+                    <div className="flex gap-2">
+                      <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
+                        isDarkMode ? 'bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-200 border border-zinc-700' : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                      }`}>
+                        <i className="ph ph-upload" />
+                        Upload
+                      </button>
+                      <button className={`px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
+                        isDarkMode ? 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white' : 'bg-[#8C7B65] hover:bg-[#7A6B58] text-white'
+                      }`}>
+                        <i className="ph ph-sparkle" />
+                        Generate
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {teacher.subjects.map((subject: string, idx: number) => [
+                      { id: `MAT${idx}01`, title: `${subject} - Chapter Notes`, type: 'Page', views: 156 + idx * 20, uploadDate: `2024-01-${20 - idx * 3}` },
+                      { id: `MAT${idx}02`, title: `${subject} - Practice Problems`, type: 'Page', views: 134 + idx * 15, uploadDate: `2024-01-${18 - idx * 3}` },
+                      { id: `MAT${idx}03`, title: `${subject} - Study Guide.pdf`, type: 'PDF', size: '2.4 MB', views: 98 + idx * 10, uploadDate: `2024-01-${15 - idx * 3}` },
+                      { id: `MAT${idx}04`, title: `${subject} - Complete Course`, type: 'Page', views: 112 + idx * 12, uploadDate: `2024-01-${12 - idx * 3}` }
+                    ]).flat().slice((materialsPage - 1) * fileItemsPerPage, materialsPage * fileItemsPerPage).map((material: any, index: number) => (
+                      <div key={index} className={`group relative p-4 rounded-xl border text-left transition-all hover:shadow-lg hover:scale-[1.02] ${
+                        isDarkMode ? 'bg-zinc-800/40 border-zinc-800/60 hover:bg-zinc-800/60 hover:border-zinc-700' : 'bg-gray-50/80 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                      }`}>
+                        <button
+                          onClick={() => {
+                            setFileToDelete({ id: material.id, title: material.title, type: 'material' })
+                            setDeleteModalOpen(true)
+                          }}
+                          className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all ${
+                            isDarkMode ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400' : 'bg-red-50 hover:bg-red-100 text-red-600'
+                          }`}
+                        >
+                          <i className="ph ph-trash text-sm" />
+                        </button>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-all group-hover:scale-110 ${
+                          isDarkMode ? 'bg-zinc-700/50' : 'bg-gray-200'
+                        }`}>
+                          <i className={`ph ${
+                            material.type === 'Page' ? 'ph-file-text' : 'ph-file-pdf'
+                          } text-xl ${
+                            isDarkMode ? 'text-zinc-400' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <h4 className={`text-sm font-semibold mb-2 line-clamp-2 min-h-[2.5rem] ${
+                          isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                        }`}>{material.title}</h4>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-xs font-medium ${
+                            isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                          }`}>{material.size || `${material.views} views`}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            isDarkMode ? 'bg-zinc-700/50 text-zinc-300' : 'bg-gray-200 text-gray-700'
+                          }`}>{material.type}</span>
+                        </div>
+                        <div className={`flex items-center justify-between pt-2 border-t ${
+                          isDarkMode ? 'border-zinc-700/50' : 'border-gray-200'
+                        }`}>
+                          <div className="flex items-center gap-1">
+                            <i className={`ph ${material.type === 'Page' ? 'ph-eye' : 'ph-download-simple'} text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-400'}`} />
+                            <span className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>{material.views}</span>
+                          </div>
+                          <span className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                            {new Date(material.uploadDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center items-center gap-2 mt-6">
+                    <button onClick={() => setMaterialsPage(p => Math.max(1, p - 1))} disabled={materialsPage === 1} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${materialsPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} ${isDarkMode ? 'bg-zinc-800/60 text-zinc-300' : 'bg-gray-200 text-gray-700'}`}>
+                      <i className="ph ph-caret-left" />
+                    </button>
+                    <span className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Page {materialsPage} of 2</span>
+                    <button onClick={() => setMaterialsPage(p => Math.min(2, p + 1))} disabled={materialsPage === 2} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${materialsPage === 2 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'} ${isDarkMode ? 'bg-zinc-800/60 text-zinc-300' : 'bg-gray-200 text-gray-700'}`}>
+                      <i className="ph ph-caret-right" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'tests' && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { id: 'EXM001', name: 'Mid-Term Examination', class: 'Grade 12A', subject: teacher.subjects[0] || 'Mathematics', date: '2024-01-28', duration: '3 hours', status: 'upcoming' },
+                    { id: 'EXM002', name: 'Unit Test - Chapter 5', class: 'Grade 11B', subject: teacher.subjects[0] || 'Physics', date: '2024-01-24', duration: '1 hour', status: 'upcoming' },
+                    { id: 'EXM003', name: 'Final Examination', class: 'Grade 10A', subject: teacher.subjects[0] || 'Chemistry', date: '2024-01-20', duration: '2.5 hours', score: 87, status: 'completed' },
+                    { id: 'EXM004', name: 'Weekly Assessment', class: 'Grade 11A', subject: teacher.subjects[0] || 'Mathematics', date: '2024-01-18', duration: '45 min', score: 82, status: 'completed' },
+                    { id: 'EXM005', name: 'Physics Practical Exam', class: 'Grade 12A', subject: teacher.subjects[0] || 'Physics', date: '2024-01-15', duration: '2 hours', score: 85, status: 'completed' },
+                    { id: 'EXM006', name: 'Chemistry Lab Test', class: 'Grade 11B', subject: teacher.subjects[0] || 'Chemistry', date: '2024-01-12', duration: '1.5 hours', score: 88, status: 'completed' },
+                    { id: 'EXM007', name: 'Mathematics Quiz', class: 'Grade 10A', subject: teacher.subjects[0] || 'Mathematics', date: '2024-01-10', duration: '30 min', score: 90, status: 'completed' },
+                    { id: 'EXM008', name: 'Theory Examination', class: 'Grade 9B', subject: teacher.subjects[0] || 'Science', date: '2024-01-08', duration: '2 hours', score: 84, status: 'completed' }
+                  ].slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((exam, index) => (
+                        <div key={index} className={`rounded-2xl border-2 overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
+                          isDarkMode ? 'bg-zinc-900/50 border-zinc-800/50 hover:border-zinc-700/70' : 'bg-white/50 border-gray-200/50 hover:border-gray-300/70'
+                        }`}>
+                          <div className={`w-full h-40 relative overflow-hidden rounded-t-2xl border-b ${
+                            isDarkMode ? 'bg-zinc-900/50 border-zinc-800/30' : 'bg-gray-50/50 border-gray-200/30'
+                          }`}>
+                            <BlurredImage className="w-full h-full object-cover" />
+                          </div>
+                          <div className="p-4">
+                            <div className="mb-4">
+                              <h3 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{exam.name}</h3>
+                              <p className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>{exam.class}</p>
+                            </div>
+                            <div className={`grid grid-cols-2 gap-px rounded-xl overflow-hidden mb-4 ${isDarkMode ? 'bg-zinc-800/30' : 'bg-gray-200/30'}`}>
+                              <div className={`p-3 flex items-start gap-2 ${isDarkMode ? 'bg-zinc-900/60' : 'bg-white/60'}`}>
+                                <div className="flex-shrink-0">
+                                  <i className={`ph ph-calendar text-sm ${isDarkMode ? 'text-zinc-600' : 'text-gray-500'}`} />
+                                </div>
+                                <div>
+                                  <p className={`text-xs mb-1 ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>Conducted on:</p>
+                                  <p className={`text-sm font-light ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {new Date(exam.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className={`p-3 flex items-start gap-2 ${isDarkMode ? 'bg-zinc-900/60 border-l border-zinc-800/30' : 'bg-white/60 border-l border-gray-200/30'}`}>
+                                <div className="flex-shrink-0">
+                                  <i className={`ph ph-trophy text-sm ${isDarkMode ? 'text-zinc-600' : 'text-gray-500'}`} />
+                                </div>
+                                <div>
+                                  <p className={`text-xs mb-1 ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                                    {exam.score ? 'Avg Score:' : 'Duration:'}
+                                  </p>
+                                  <p className={`text-sm font-light ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {exam.score ? `${exam.score}%` : exam.duration}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2"></div>
+                              {exam.status === 'completed' && (
+                                <div className="flex items-center gap-2">
+                                  <i className={`ph ph-check-circle text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`} />
+                                  <span className={`text-xs font-medium ${isDarkMode ? 'text-zinc-300' : 'text-gray-700'}`}>Completed</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                 </div>
               </>
             )}
@@ -371,7 +764,7 @@ export default function TeacherProfilePage() {
                       }`}>
                         <div className="flex items-start gap-3">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            isDarkMode ? 'bg-zinc-700/50' : 'bg-gray-200'
+                            isDarkMode ? 'bg-zinc-800/50' : 'bg-gray-100'
                           }`}>
                             <i className={`ph ${
                               activity.type === 'grading' ? 'ph-check-circle' :
@@ -381,10 +774,10 @@ export default function TeacherProfilePage() {
                             } text-xs ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`} />
                           </div>
                           <div className="flex-1">
-                            <p className={`text-xs font-medium ${
+                            <p className={`text-xs font-medium mb-1 ${
                               isDarkMode ? 'text-zinc-200' : 'text-gray-900'
                             }`}>{activity.activity}</p>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-2">
                               <span className={`text-xs ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
                                 {activity.class}
                               </span>
@@ -471,7 +864,8 @@ export default function TeacherProfilePage() {
             </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+        </div>
+      </DashboardLayout>
+    </>
   )
 }

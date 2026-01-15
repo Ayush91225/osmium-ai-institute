@@ -1,6 +1,11 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { ClassProvider } from '@/contexts/ClassContext'
+import { TeacherProvider } from '@/contexts/TeacherContext'
+import { StudentProvider } from '@/contexts/StudentContext'
+import { ApprovalProvider } from '@/contexts/ApprovalContext'
+import { UnifiedDataProvider } from '@/contexts/UnifiedDataContext'
 import LoadingSpinner from '@/components/dashboard/shared/LoadingSpinner'
 import '@/assets/css/dashboard/admin.css'
 
@@ -22,10 +27,20 @@ export const metadata: Metadata = {
 
 export default function TeachersPage() {
   return (
-    <DashboardLayout>
-      <Suspense fallback={<LoadingSpinner />}>
-        <TeacherManagement />
-      </Suspense>
-    </DashboardLayout>
+    <ClassProvider>
+      <TeacherProvider>
+        <StudentProvider>
+          <ApprovalProvider>
+            <UnifiedDataProvider>
+              <DashboardLayout>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <TeacherManagement />
+                </Suspense>
+              </DashboardLayout>
+            </UnifiedDataProvider>
+          </ApprovalProvider>
+        </StudentProvider>
+      </TeacherProvider>
+    </ClassProvider>
   )
 }

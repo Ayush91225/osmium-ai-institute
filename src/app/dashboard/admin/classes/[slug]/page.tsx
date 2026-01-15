@@ -5,17 +5,16 @@ import { TeacherProvider } from '@/contexts/TeacherContext'
 import { StudentProvider } from '@/contexts/StudentContext'
 import { ApprovalProvider } from '@/contexts/ApprovalContext'
 import { UnifiedDataProvider } from '@/contexts/UnifiedDataContext'
-import StudentManagement from '@/components/dashboard/admin/StudentManagement'
-import '@/assets/css/dashboard/admin.css'
+import ClassDetailView from '@/components/dashboard/admin/ClassDetailView'
 
-export default function StudentsPage() {
+export default function ClassDetailPage() {
   return (
     <ClassProvider>
       <TeacherProvider>
         <StudentProvider>
           <ApprovalProvider>
             <UnifiedDataProvider>
-              <StudentManagement />
+              <ClassDetailView />
             </UnifiedDataProvider>
           </ApprovalProvider>
         </StudentProvider>

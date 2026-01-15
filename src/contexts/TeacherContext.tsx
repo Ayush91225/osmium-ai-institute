@@ -1,21 +1,9 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react'
+import { getDatabase, Teacher } from '@/lib/database'
 
-export interface Teacher {
-  id: string
-  name: string
-  email: string
-  phone: string
-  subjects: string[]
-  classes: string[]
-  department: string
-  joiningDate: string
-  status: 'active' | 'inactive'
-  experience: number
-  qualification: string
-  performance?: number
-}
+export type { Teacher } from '@/lib/database'
 
 interface TeacherState {
   // Data
@@ -93,93 +81,6 @@ type TeacherContextType = TeacherState & TeacherActions
 
 const TeacherContext = createContext<TeacherContextType | undefined>(undefined)
 
-const initialTeachers: Teacher[] = [
-  {
-    id: 'TCH001',
-    name: 'Dr. Sarah Johnson',
-    email: 'sarah.johnson@osmium.edu',
-    phone: '+1 234-567-8901',
-    subjects: ['Mathematics', 'Statistics', 'Calculus'],
-    classes: ['Grade 10A', 'Grade 11B', 'Grade 12A'],
-    department: 'Mathematics',
-    joiningDate: '2022-08-15',
-    status: 'active',
-    experience: 8,
-    qualification: 'PhD in Mathematics',
-    performance: 4.9
-  },
-  {
-    id: 'TCH002',
-    name: 'Prof. Michael Chen',
-    email: 'michael.chen@osmium.edu',
-    phone: '+1 234-567-8902',
-    subjects: ['Physics', 'Chemistry'],
-    classes: ['Grade 11A', 'Grade 12B'],
-    department: 'Science',
-    joiningDate: '2021-01-10',
-    status: 'active',
-    experience: 12,
-    qualification: 'MSc in Physics',
-    performance: 4.7
-  },
-  {
-    id: 'TCH003',
-    name: 'Dr. Rajesh Kumar',
-    email: 'rajesh.kumar@osmium.edu',
-    phone: '+1 234-567-8904',
-    subjects: ['Biology', 'Environmental Science'],
-    classes: ['Grade 11C', 'Grade 12C'],
-    department: 'Science',
-    joiningDate: '2020-06-01',
-    status: 'active',
-    experience: 15,
-    qualification: 'PhD in Biology',
-    performance: 4.8
-  },
-  {
-    id: 'TCH004',
-    name: 'Ms. Lisa Anderson',
-    email: 'lisa.anderson@osmium.edu',
-    phone: '+1 234-567-8905',
-    subjects: ['History', 'Geography'],
-    classes: ['Grade 9B', 'Grade 10C'],
-    department: 'Social Studies',
-    joiningDate: '2023-01-15',
-    status: 'active',
-    experience: 6,
-    qualification: 'MA in History',
-    performance: 4.6
-  },
-  {
-    id: 'TCH005',
-    name: 'Mr. David Wilson',
-    email: 'david.wilson@osmium.edu',
-    phone: '+1 234-567-8906',
-    subjects: ['Computer Science', 'Programming'],
-    classes: ['Grade 11D', 'Grade 12D'],
-    department: 'Technology',
-    joiningDate: '2019-09-01',
-    status: 'active',
-    experience: 10,
-    qualification: 'MSc in Computer Science',
-    performance: 4.9
-  },
-  {
-    id: 'TCH006',
-    name: 'Ms. Emily Davis',
-    email: 'emily.davis@osmium.edu',
-    phone: '+1 234-567-8903',
-    subjects: ['English Literature', 'Creative Writing'],
-    classes: ['Grade 9A', 'Grade 10B'],
-    department: 'Languages',
-    joiningDate: '2023-03-20',
-    status: 'active',
-    experience: 5,
-    qualification: 'MA in English Literature',
-    performance: 4.5
-  }
-]
-
 export function TeacherProvider({ children }: { children: ReactNode }) {
   const [teachers, setTeachersState] = useState<Teacher[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -195,28 +96,14 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load teachers from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedTeachers = localStorage.getItem('teachers')
-      if (savedTeachers) {
-        try {
-          setTeachersState(JSON.parse(savedTeachers))
-        } catch {
-          setTeachersState(initialTeachers)
-        }
-      } else {
-        setTeachersState(initialTeachers)
-      }
+      const db = getDatabase()
+      setTeachersState(db.getTeachers())
+      const unsub = db.subscribe('teachers', () => setTeachersState(db.getTeachers()))
+      return unsub
     }
   }, [])
-
-  // Save teachers to localStorage whenever teachers change
-  useEffect(() => {
-    if (typeof window !== 'undefined' && teachers.length > 0) {
-      localStorage.setItem('teachers', JSON.stringify(teachers))
-    }
-  }, [teachers])
 
   // Memoized computed values
   const departments = useMemo(() => 
@@ -299,21 +186,12 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('teacher-view-mode', viewMode)
     }
   }, [viewMode])
-  // Memoized actions
   const actions = useMemo(() => ({
-    // Data Actions
-    setTeachers: setTeachersState,
-    
-    addTeacher: (teacher: Teacher) => {
-      setTeachersState(prev => [...prev, teacher])
-    },
-    
-    updateTeacher: (id: string, updates: Partial<Teacher>) => {
-      setTeachersState(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t))
-    },
-    
+    setTeachers: (teachers: Teacher[]) => teachers.forEach(t => getDatabase().addTeacher(t)),
+    addTeacher: (teacher: Teacher) => getDatabase().addTeacher(teacher),
+    updateTeacher: (id: string, updates: Partial<Teacher>) => getDatabase().updateTeacher(id, updates),
     deleteTeacher: (id: string) => {
-      setTeachersState(prev => prev.filter(t => t.id !== id))
+      getDatabase().deleteTeacher(id)
       if (selectedTeacher?.id === id) {
         setSelectedTeacher(null)
         setIsDetailModalOpen(false)

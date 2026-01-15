@@ -3,20 +3,29 @@
 import { memo, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useDarkMode } from '@/contexts/DarkModeContext'
+import { getDatabase } from '@/lib/database'
 
 interface AddStudentModalProps {
   isOpen?: boolean
   onClose: () => void
   onAddStudent?: (student: any) => void
+  prefilledClass?: string
+  prefilledDepartment?: string
+  prefilledCourse?: string
 }
 
-export default function AddStudentModal({ isOpen = true, onClose, onAddStudent }: AddStudentModalProps) {
+export default function AddStudentModal({ isOpen = true, onClose, onAddStudent, prefilledClass, prefilledDepartment, prefilledCourse }: AddStudentModalProps) {
   const { isDarkMode } = useDarkMode()
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'manual' | 'invite'>('manual')
   const [inviteType, setInviteType] = useState<'single' | 'bulk'>('single')
   const [generatedLink, setGeneratedLink] = useState('')
   const [copiedItem, setCopiedItem] = useState<string | null>(null)
+  const [branches, setBranches] = useState<any[]>([])
+  const [courses, setCourses] = useState<any[]>([])
+  const [classes, setClasses] = useState<any[]>([])
+  const [filteredCourses, setFilteredCourses] = useState<any[]>([])
+  const [filteredClasses, setFilteredClasses] = useState<any[]>([])
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -37,7 +46,43 @@ export default function AddStudentModal({ isOpen = true, onClose, onAddStudent }
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    if (typeof window !== 'undefined') {
+      const db = getDatabase()
+      setBranches(db.getBranches())
+      setCourses(db.getCourses())
+      setClasses(db.getClasses())
+    }
+    if (prefilledClass || prefilledDepartment || prefilledCourse) {
+      setFormData(prev => ({
+        ...prev,
+        class: prefilledClass || prev.class,
+        department: prefilledDepartment || prev.department,
+        course: prefilledCourse || prev.course
+      }))
+    }
+  }, [prefilledClass, prefilledDepartment, prefilledCourse])
+
+  useEffect(() => {
+    if (formData.department) {
+      const branch = branches.find(b => b.name === formData.department)
+      if (branch) {
+        setFilteredCourses(courses.filter(c => c.branchId === branch.id))
+      }
+    } else {
+      setFilteredCourses(courses)
+    }
+  }, [formData.department, branches, courses])
+
+  useEffect(() => {
+    if (formData.course) {
+      const course = courses.find(c => c.name === formData.course)
+      if (course) {
+        setFilteredClasses(classes.filter(cl => cl.courseId === course.id))
+      }
+    } else {
+      setFilteredClasses(classes)
+    }
+  }, [formData.course, courses, classes])
 
   const generatePassword = () => {
     if (!formData.firstName || !formData.dob) return ''
@@ -82,19 +127,39 @@ export default function AddStudentModal({ isOpen = true, onClose, onAddStudent }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    const db = getDatabase()
+    const existingStudent = db.getStudents().find(s => s.email === formData.email)
+    if (existingStudent) {
+      alert(`A student with email "${formData.email}" already exists.`)
+      return
+    }
+    
+    // Generate proper roll number from class code
+    const classCode = formData.class.match(/\d+[A-Z]/)?.[0] || formData.class.substring(0, 3).toUpperCase()
+    const randomNum = String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')
+    const rollNumber = `${classCode}${randomNum}`
+    
     const newStudent = {
-      id: Date.now().toString(),
+      id: rollNumber,
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
       class: formData.class,
-      rollNumber: `${formData.class}${String(Date.now()).slice(-3)}`,
+      rollNumber: rollNumber,
       admissionDate: formData.admissionDate || new Date().toISOString().split('T')[0],
       status: 'active' as const,
-      grade: formData.class.match(/\d+/)?.[0] || '10',
       subjects: [],
-      performance: 0,
-      parentContact: formData.parentPhone
+      parentContact: formData.parentPhone,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      address: formData.address,
+      gender: formData.gender,
+      bloodGroup: formData.bloodGroup,
+      dateOfBirth: formData.dob,
+      parentName: formData.parentName,
+      parentEmail: formData.parentEmail,
+      department: formData.department,
+      course: formData.course
     }
     
     if (onAddStudent) {
@@ -400,44 +465,62 @@ export default function AddStudentModal({ isOpen = true, onClose, onAddStudent }
                     </div>
             
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <input
-                        type="text"
+                      <select
                         value={formData.department}
                         onChange={(e) => handleInputChange('department', e.target.value)}
-                        placeholder="Department*"
                         required
+                        disabled={!!prefilledDepartment}
                         className={`w-full px-3 py-3 rounded-xl border text-sm ${
-                          isDarkMode 
-                            ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-100 placeholder-zinc-400 focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20'
-                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-gray-600 focus:ring-2 focus:ring-gray-200'
+                          prefilledDepartment
+                            ? isDarkMode
+                              ? 'bg-zinc-800/30 border-zinc-700/50 text-zinc-300 cursor-not-allowed'
+                              : 'bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed'
+                            : isDarkMode 
+                              ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-100 focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20'
+                              : 'bg-white border-gray-300 text-gray-900 focus:border-gray-600 focus:ring-2 focus:ring-gray-200'
                         }`}
-                      />
+                      >
+                        <option value="">Select Department*</option>
+                        {branches.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
+                      </select>
                       
-                      <input
-                        type="text"
+                      <select
                         value={formData.course}
                         onChange={(e) => handleInputChange('course', e.target.value)}
-                        placeholder="Course*"
                         required
+                        disabled={!!prefilledCourse || !formData.department}
                         className={`w-full px-3 py-3 rounded-xl border text-sm ${
-                          isDarkMode 
-                            ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-100 placeholder-zinc-400 focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20'
-                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-gray-600 focus:ring-2 focus:ring-gray-200'
+                          prefilledCourse || !formData.department
+                            ? isDarkMode
+                              ? 'bg-zinc-800/30 border-zinc-700/50 text-zinc-300 cursor-not-allowed'
+                              : 'bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed'
+                            : isDarkMode 
+                              ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-100 focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20'
+                              : 'bg-white border-gray-300 text-gray-900 focus:border-gray-600 focus:ring-2 focus:ring-gray-200'
                         }`}
-                      />
+                      >
+                        <option value="">Select Course*</option>
+                        {filteredCourses.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      </select>
                       
-                      <input
-                        type="text"
+                      <select
                         value={formData.class}
                         onChange={(e) => handleInputChange('class', e.target.value)}
-                        placeholder="Class*"
                         required
+                        disabled={!!prefilledClass || !formData.course}
                         className={`w-full px-3 py-3 rounded-xl border text-sm ${
-                          isDarkMode 
-                            ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-100 placeholder-zinc-400 focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20'
-                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-gray-600 focus:ring-2 focus:ring-gray-200'
+                          prefilledClass || !formData.course
+                            ? isDarkMode
+                              ? 'bg-zinc-800/30 border-zinc-700/50 text-zinc-300 cursor-not-allowed'
+                              : 'bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed'
+                            : isDarkMode 
+                              ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-100 focus:border-zinc-600 focus:ring-2 focus:ring-zinc-600/20'
+                              : 'bg-white border-gray-300 text-gray-900 focus:border-gray-600 focus:ring-2 focus:ring-gray-200'
                         }`}
-                      />
+                      >
+                        <option value="">Select Class*</option>
+                        {filteredClasses.map(cl => <option key={cl.id} value={cl.name}>{cl.name}</option>)}
+                      </select>
                     </div>
                     
                     {password && (

@@ -3,7 +3,8 @@
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useDarkMode } from '@/contexts/DarkModeContext'
-import { Student } from '@/contexts/StudentContext'
+import { getDatabase } from '@/lib/database'
+import type { Student } from '@/lib/database'
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout'
 import StudentProfileHeader from '@/components/dashboard/admin/StudentProfileHeader'
 import AIRecommendations from '@/components/dashboard/admin/AIRecommendations'
@@ -15,51 +16,6 @@ import dynamic from 'next/dynamic'
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
-const initialStudents: Student[] = [
-  {
-    id: '10A001',
-    name: 'Arjun Sharma',
-    email: 'arjun.sharma@student.osmium.edu',
-    phone: '+1 234-567-8901',
-    class: 'Grade 10A',
-    rollNumber: '10A001',
-    admissionDate: '2023-04-15',
-    status: 'active',
-    grade: '10',
-    subjects: ['Mathematics', 'Physics', 'Chemistry', 'English'],
-    performance: 4.2,
-    parentContact: '+1 234-567-8900'
-  },
-  {
-    id: '11B015',
-    name: 'Priya Patel',
-    email: 'priya.patel@student.osmium.edu',
-    phone: '+1 234-567-8902',
-    class: 'Grade 11B',
-    rollNumber: '11B015',
-    admissionDate: '2022-04-10',
-    status: 'active',
-    grade: '11',
-    subjects: ['Biology', 'Chemistry', 'Physics', 'English'],
-    performance: 4.6,
-    parentContact: '+1 234-567-8903'
-  },
-  {
-    id: '12A008',
-    name: 'Rahul Kumar',
-    email: 'rahul.kumar@student.osmium.edu',
-    phone: '+1 234-567-8904',
-    class: 'Grade 12A',
-    rollNumber: '12A008',
-    admissionDate: '2021-04-05',
-    status: 'active',
-    grade: '12',
-    subjects: ['Computer Science', 'Mathematics', 'Physics', 'English'],
-    performance: 4.8,
-    parentContact: '+1 234-567-8905'
-  }
-]
-
 export default function StudentProfilePage() {
   const params = useParams()
   const router = useRouter()
@@ -69,6 +25,8 @@ export default function StudentProfilePage() {
   const [testTab, setTestTab] = useState('exams')
   const [currentPage, setCurrentPage] = useState(1)
   const [mounted, setMounted] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ email: '', phone: '', address: '', gender: '', bloodGroup: '', dateOfBirth: '', parentName: '', parentEmail: '', parentContact: '', department: '', course: '' })
   const itemsPerPage = 4
   const recommendations = [
     [
@@ -87,10 +45,39 @@ export default function StudentProfilePage() {
 
   useEffect(() => {
     setMounted(true)
-    const studentId = params.slug as string
-    const foundStudent = initialStudents.find(s => s.rollNumber === studentId)
-    setStudent(foundStudent || null)
+    if (typeof window !== 'undefined') {
+      const studentId = params.slug as string
+      const db = getDatabase()
+      const foundStudent = db.getStudents().find(s => s.rollNumber === studentId || s.id === studentId)
+      setStudent(foundStudent || null)
+      if (foundStudent) {
+        setEditForm({
+          email: foundStudent.email,
+          phone: foundStudent.phone,
+          address: foundStudent.address || '',
+          gender: foundStudent.gender || '',
+          bloodGroup: foundStudent.bloodGroup || '',
+          dateOfBirth: foundStudent.dateOfBirth || '',
+          parentName: foundStudent.parentName || '',
+          parentEmail: foundStudent.parentEmail || '',
+          parentContact: foundStudent.parentContact,
+          department: foundStudent.department || '',
+          course: foundStudent.course || ''
+        })
+      }
+    }
   }, [params.slug])
+
+  const handleSaveEdit = () => {
+    if (student) {
+      const db = typeof window !== 'undefined' ? require('@/lib/database').getDatabase() : null
+      if (db) {
+        db.updateStudent(student.id, editForm)
+      }
+      setStudent({ ...student, ...editForm })
+      setIsEditing(false)
+    }
+  }
 
   if (!mounted) return null
 
@@ -141,7 +128,7 @@ export default function StudentProfilePage() {
         </nav>
 
         {/* Student Header Card */}
-        <StudentProfileHeader student={student} />
+        <StudentProfileHeader student={student} onEditClick={() => setIsEditing(!isEditing)} />
 
         {/* Navigation Tabs */}
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
@@ -158,26 +145,33 @@ export default function StudentProfilePage() {
                     ? 'bg-zinc-900/60 border-zinc-800/40' 
                     : 'bg-white/80 border-gray-200/60'
                 }`}>
-                  <h3 className={`text-base font-semibold mb-3 flex items-center gap-2 ${
-                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                  }`}>
-                    <i className="ph ph-address-book text-sm" />
-                    Contact Information
-                  </h3>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className={`text-base font-semibold flex items-center gap-2 ${
+                      isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                    }`}>
+                      <i className="ph ph-address-book text-sm" />
+                      Contact Information
+                    </h3>
+                    {isEditing && (
+                      <button onClick={handleSaveEdit} className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[#8C7B65] hover:bg-[#7A6B57] text-white">
+                        Save Changes
+                      </button>
+                    )}
+                  </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
   {[
-    { label: 'Email', value: student.email, icon: 'ph ph-envelope' },
-    { label: 'Phone', value: student.phone, icon: 'ph ph-phone' },
-    { label: 'Address', value: student.address || 'Not provided', icon: 'ph ph-map-pin' },
-    { label: 'Gender', value: student.gender || 'Not specified', icon: 'ph ph-user' },
-    { label: 'Blood Group', value: student.bloodGroup || 'Not specified', icon: 'ph ph-drop' },
-    { label: 'Date of Birth', value: student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'Not provided', icon: 'ph ph-cake' },
-    { label: 'Parent Name', value: student.parentName || 'Not provided', icon: 'ph ph-user-circle' },
-    { label: 'Parent Email', value: student.parentEmail || 'Not provided', icon: 'ph ph-envelope' },
-    { label: 'Parent Contact', value: student.parentContact, icon: 'ph ph-phone' },
-    { label: 'Department', value: student.department || 'Not specified', icon: 'ph ph-buildings' },
-    { label: 'Course', value: student.course || 'Not specified', icon: 'ph ph-book' },
-    { label: 'Admission Date', value: new Date(student.admissionDate).toLocaleDateString(), icon: 'ph ph-calendar' }
+    { label: 'Email', value: editForm.email, icon: 'ph ph-envelope', editable: true, field: 'email', type: 'email' },
+    { label: 'Phone', value: editForm.phone, icon: 'ph ph-phone', editable: true, field: 'phone', type: 'tel' },
+    { label: 'Address', value: editForm.address || 'Not provided', icon: 'ph ph-map-pin', editable: true, field: 'address', type: 'text' },
+    { label: 'Gender', value: editForm.gender || 'Not specified', icon: 'ph ph-user', editable: true, field: 'gender', type: 'text' },
+    { label: 'Blood Group', value: editForm.bloodGroup || 'Not specified', icon: 'ph ph-drop', editable: true, field: 'bloodGroup', type: 'text' },
+    { label: 'Date of Birth', value: editForm.dateOfBirth ? new Date(editForm.dateOfBirth).toLocaleDateString() : 'Not provided', icon: 'ph ph-cake', editable: true, field: 'dateOfBirth', type: 'date' },
+    { label: 'Parent Name', value: editForm.parentName || 'Not provided', icon: 'ph ph-user-circle', editable: true, field: 'parentName', type: 'text' },
+    { label: 'Parent Email', value: editForm.parentEmail || 'Not provided', icon: 'ph ph-envelope', editable: true, field: 'parentEmail', type: 'email' },
+    { label: 'Parent Contact', value: editForm.parentContact, icon: 'ph ph-phone', editable: true, field: 'parentContact', type: 'tel' },
+    { label: 'Department', value: editForm.department || 'Not specified', icon: 'ph ph-buildings', editable: true, field: 'department', type: 'text' },
+    { label: 'Course', value: editForm.course || 'Not specified', icon: 'ph ph-book', editable: true, field: 'course', type: 'text' },
+    { label: 'Admission Date', value: new Date(student.admissionDate).toLocaleDateString(), icon: 'ph ph-calendar', editable: false }
   ].map((item, index) => (
     <div key={index} className="flex items-center gap-2">
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -187,13 +181,35 @@ export default function StudentProfilePage() {
           isDarkMode ? 'text-zinc-400' : 'text-gray-500'
         }`} />
       </div>
-      <div>
+      <div className="flex-1">
         <p className={`text-xs font-medium ${
           isDarkMode ? 'text-zinc-400' : 'text-gray-500'
         }`}>{item.label}</p>
-        <p className={`text-xs font-medium ${
-          isDarkMode ? 'text-zinc-200' : 'text-gray-900'
-        }`}>{item.value}</p>
+        {isEditing && item.editable ? (
+          item.type === 'date' ? (
+            <input
+              type="date"
+              value={typeof item.value === 'string' && item.value.includes('/') ? item.value.split('/').reverse().join('-') : (typeof item.value === 'string' ? item.value : '')}
+              onChange={(e) => setEditForm({...editForm, [item.field!]: e.target.value})}
+              className={`text-xs font-medium w-full px-2 py-1 rounded border ${
+                isDarkMode ? 'bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-white border-gray-300 text-gray-900'
+              }`}
+            />
+          ) : (
+            <input
+              type={item.type}
+              value={item.value}
+              onChange={(e) => setEditForm({...editForm, [item.field!]: e.target.value})}
+              className={`text-xs font-medium w-full px-2 py-1 rounded border ${
+                isDarkMode ? 'bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-white border-gray-300 text-gray-900'
+              }`}
+            />
+          )
+        ) : (
+          <p className={`text-xs font-medium ${
+            isDarkMode ? 'text-zinc-200' : 'text-gray-900'
+          }`}>{item.value}</p>
+        )}
       </div>
     </div>
   ))}

@@ -4,6 +4,7 @@ import { memo, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { getDatabase } from '@/lib/database'
 
 interface AddFacultyModalProps {
   isOpen: boolean
@@ -84,6 +85,12 @@ function AddFacultyModal({ isOpen, onClose, onAddTeacher }: AddFacultyModalProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const db = getDatabase()
+    const existingTeacher = db.getTeachers().find(t => t.email === formData.email)
+    if (existingTeacher) {
+      alert(`A teacher with email "${formData.email}" already exists.`)
+      return
+    }
     const teacher = {
       id: Date.now().toString(),
       name: `${formData.firstName} ${formData.lastName}`,

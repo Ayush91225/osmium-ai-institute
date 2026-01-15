@@ -1,10 +1,12 @@
 'use client'
 
 import { memo, useCallback, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import { useStudents } from '@/contexts/StudentContext'
 import AddFacultyModal from './AddFacultyModal'
 import AddStudentModal from './AddStudentModal'
+import AddSubjectModal from './AddSubjectModal'
 
 const quickActions = [
   { icon: 'ph-user-plus', label: 'Add Teacher', action: 'add-teacher' },
@@ -17,9 +19,11 @@ const quickActions = [
 
 function QuickActionsSection() {
   const { isDarkMode } = useDarkMode()
+  const router = useRouter()
   const { setIsAddModalOpen, addStudent, isAddModalOpen, closeAllModals } = useStudents()
   const [mounted, setMounted] = useState(false)
   const [isAddFacultyModalOpen, setIsAddFacultyModalOpen] = useState(false)
+  const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false)
 
   const handleAddTeacher = (teacher: any) => {
     console.log('New teacher added:', teacher)
@@ -38,7 +42,7 @@ function QuickActionsSection() {
         setIsAddModalOpen(true)
         break
       case 'add-subject':
-        // Navigate to add subject page
+        setIsAddSubjectModalOpen(true)
         break
       case 'schedule-test':
         // Navigate to test scheduling page
@@ -104,6 +108,11 @@ function QuickActionsSection() {
         isOpen={isAddFacultyModalOpen}
         onClose={() => setIsAddFacultyModalOpen(false)}
         onAddTeacher={handleAddTeacher}
+      />
+      
+      <AddSubjectModal
+        isOpen={isAddSubjectModalOpen}
+        onClose={() => setIsAddSubjectModalOpen(false)}
       />
       
       {isAddModalOpen && (

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "SUB001",
+    "name": "Mathematics",
+    "code": "MATH101",
+    "credits": 4
+  },
+  {
+    "id": "SUB002",
+    "name": "Physics",
+    "code": "PHY101",
+    "credits": 4
+  },
+  {
+    "id": "SUB003",
+    "name": "Chemistry",
+    "code": "CHEM101",
+    "credits": 4
+  },
+  {
+    "id": "SUB004",
+    "name": "English",
+    "code": "ENG101",
+    "credits": 3
+  },
+  {
+    "id": "SUB005",
+    "name": "Data Structures",
+    "code": "CS201",
+    "credits": 4
+  },
+  {
+    "id": "SUB006",
+    "name": "Computer Networks",
+    "code": "CS301",
+    "credits": 3
+  }
+]

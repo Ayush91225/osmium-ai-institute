@@ -10,7 +10,7 @@ interface DeleteConfirmModalProps {
   onClose: () => void
   onConfirm: () => void
   teacherName: string
-  type?: 'teacher' | 'student'
+  type?: 'teacher' | 'student' | 'class'
 }
 
 function DeleteConfirmModal({ isOpen, onClose, onConfirm, teacherName, type = 'teacher' }: DeleteConfirmModalProps) {
@@ -60,13 +60,15 @@ function DeleteConfirmModal({ isOpen, onClose, onConfirm, teacherName, type = 't
           <h3 className={`text-lg font-semibold mb-2 ${
             isDarkMode ? 'text-zinc-100' : 'text-gray-900'
           }`}>
-            {type === 'student' ? 'Remove Student' : t('remove_faculty_member')}
+            {type === 'student' ? 'Remove Student' : type === 'class' ? 'Delete Class' : t('remove_faculty_member')}
           </h3>
           
           <p className={`text-sm mb-6 ${
             isDarkMode ? 'text-zinc-400' : 'text-gray-500'
           }`}>
-            Are you sure you want to remove <span className="font-medium">{teacherName}</span>? This action cannot be undone.
+            Are you sure you want to {type === 'class' ? 'delete' : 'remove'} <span className="font-medium">{teacherName}</span>? 
+            {type === 'class' && ' All associated data including students, subjects, and assignments will be permanently removed.'}
+            {type !== 'class' && ' This action cannot be undone.'}
           </p>
           
           <div className="flex gap-3">

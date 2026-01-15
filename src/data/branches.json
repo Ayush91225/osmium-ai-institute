@@ -1,0 +1,18 @@
+[
+  {
+    "id": "BR001",
+    "name": "Main Campus",
+    "code": "MAIN",
+    "location": "Downtown",
+    "status": "active",
+    "type": "campus"
+  },
+  {
+    "id": "BR002",
+    "name": "North Center",
+    "code": "NORTH",
+    "location": "North District",
+    "status": "active",
+    "type": "center"
+  }
+]

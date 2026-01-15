@@ -110,14 +110,9 @@ function StudentGrid({ students }: StudentGridProps) {
               }`}>
                 {student.class}
               </span>
-              <span className={`${
-                mounted && isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-              }`}>
-                Grade {student.grade}
-              </span>
             </div>
             
-            {student.performance && (
+            {student.performance ? (
               <div className="flex items-center justify-between text-xs">
                 <span className={`${
                   mounted && isDarkMode ? 'text-zinc-400' : 'text-gray-500'
@@ -129,9 +124,22 @@ function StudentGrid({ students }: StudentGridProps) {
                   <span className={`font-medium ${
                     mounted && isDarkMode ? 'text-zinc-300' : 'text-gray-700'
                   }`}>
-                    {student.performance}
+                    {student.performance.toFixed(1)}
                   </span>
                 </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between text-xs">
+                <span className={`${
+                  mounted && isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                }`}>
+                  Performance
+                </span>
+                <span className={`text-xs ${
+                  mounted && isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                }`}>
+                  Not Available
+                </span>
               </div>
             )}
           </div>

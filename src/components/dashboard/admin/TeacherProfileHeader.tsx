@@ -5,9 +5,10 @@ import { useDarkMode } from '@/contexts/DarkModeContext'
 
 interface TeacherHeaderProps {
   teacher: any
+  onEditClick: () => void
 }
 
-export default function TeacherProfileHeader({ teacher }: TeacherHeaderProps) {
+export default function TeacherProfileHeader({ teacher, onEditClick }: TeacherHeaderProps) {
   const { isDarkMode } = useDarkMode()
 
   if (!teacher) return null
@@ -144,7 +145,7 @@ export default function TeacherProfileHeader({ teacher }: TeacherHeaderProps) {
               <i className="ph ph-download-simple text-sm" />
               Export
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#8C7B65] hover:bg-[#7A6B57] text-white rounded-xl text-sm font-medium">
+            <button onClick={onEditClick} className="flex items-center gap-2 px-4 py-2 bg-[#8C7B65] hover:bg-[#7A6B57] text-white rounded-xl text-sm font-medium">
               <i className="ph ph-pencil-simple text-sm" />
               Edit
             </button>
