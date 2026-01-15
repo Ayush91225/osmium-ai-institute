@@ -10,9 +10,10 @@ import UserProfile from './UserProfile'
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
+  role?: 'admin' | 'student' | 'teacher'
 }
 
-const navigationItems = [
+const adminNavigationItems = [
   { href: '/dashboard/admin', icon: 'ph-squares-four', label: 'Dashboard' },
   { href: '/dashboard/admin/teachers', icon: 'ph-chalkboard-teacher', label: 'Teachers' },
   { href: '/dashboard/admin/approvals', icon: 'ph-clock', label: 'Pending Approvals' },
@@ -22,17 +23,33 @@ const navigationItems = [
   { href: '/dashboard/exams', icon: 'ph-exam', label: 'Exam & Tests' },
 ]
 
-const otherItems = [
+const studentNavigationItems = [
+  { href: '/dashboard/student', icon: 'ph-squares-four', label: 'Dashboard' },
+  { href: '/dashboard/student/learn', icon: 'ph-book-open', label: 'Learn' },
+  { href: '/dashboard/student/exam-test', icon: 'ph-exam', label: 'Exam & Tests' },
+  { href: '/dashboard/student/ai-mentor', icon: 'ph-robot', label: 'AI Mentor' },
+  { href: '/dashboard/student/projects', icon: 'ph-folder-open', label: 'Project Submissions' },
+]
+
+const adminOtherItems = [
   { href: '/dashboard/admin/notifications', icon: 'ph-bell', label: 'Notifications' },
   { href: '/dashboard/admin/subscription', icon: 'ph-crown', label: 'Subscription' },
   { href: '/dashboard/admin/billing', icon: 'ph-currency-inr', label: 'Billing' },
   { href: '/dashboard/help', icon: 'ph-question', label: 'Help & Support' },
 ]
 
-function Sidebar({ isOpen, onClose }: SidebarProps) {
+const studentOtherItems = [
+  { href: '/dashboard/student/notifications', icon: 'ph-bell', label: 'Notification' },
+  { href: '/dashboard/help', icon: 'ph-question', label: 'Help & Support' },
+]
+
+function Sidebar({ isOpen, onClose, role = 'admin' }: SidebarProps) {
   const pathname = usePathname()
   const { isDarkMode } = useDarkMode()
   const [mounted, setMounted] = useState(false)
+
+  const navigationItems = role === 'student' ? studentNavigationItems : adminNavigationItems
+  const otherItems = role === 'student' ? studentOtherItems : adminOtherItems
 
   useEffect(() => {
     setMounted(true)
