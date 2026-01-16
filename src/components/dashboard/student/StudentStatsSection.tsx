@@ -6,54 +6,56 @@ import { useDarkMode } from '@/contexts/DarkModeContext'
 function StudentStatsSection() {
   const { isDarkMode } = useDarkMode()
 
+  const statsData = [
+    { 
+      title: 'Today Session', 
+      value: '1hr 10min', 
+      extra: '+32 min than average',
+      icon: 'ph-activity',
+      bgColor: isDarkMode ? 'bg-zinc-800' : 'bg-gray-100'
+    },
+    { 
+      title: 'Pending Submissions', 
+      value: '5', 
+      extra: '+2 this week',
+      icon: 'ph-hourglass',
+      bgColor: isDarkMode ? 'bg-zinc-800' : 'bg-yellow-50'
+    },
+    { 
+      title: 'Ongoing Courses', 
+      value: '3', 
+      extra: '+2 this month',
+      icon: 'ph-graduation-cap',
+      bgColor: isDarkMode ? 'bg-zinc-800' : 'bg-teal-50'
+    }
+  ]
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      {/* Today Session */}
-      <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-zinc-900/50 border border-zinc-800/50' : 'bg-white border border-gray-200'}`}>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-            <i className="ph ph-lightning text-orange-600 text-xl" />
+    <div className={`rounded-2xl p-6 md:p-8 border mb-8 ${isDarkMode ? 'bg-zinc-900/50 border-zinc-800/50' : 'bg-white border-gray-100'}`}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {statsData.map((stat, index) => (
+          <div key={stat.title} className="relative">
+            {index > 0 && (
+              <div className={`hidden md:block absolute left-0 top-0 bottom-0 w-px ${isDarkMode ? 'bg-zinc-800' : 'bg-gray-200'}`} style={{ marginLeft: '-16px' }} />
+            )}
+            <div className="flex items-start gap-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${stat.bgColor}`}>
+                <i className={`ph ${stat.icon} text-xl ${isDarkMode ? 'text-zinc-300' : 'text-gray-700'}`} />
+              </div>
+              <div>
+                <div className={`text-sm mb-2 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                  {stat.title}
+                </div>
+                <div className={`text-3xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  {stat.value}
+                </div>
+                <div className={`text-xs ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  {stat.extra}
+                </div>
+              </div>
+            </div>
           </div>
-          <span className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Today Session</span>
-        </div>
-        <div className={`text-3xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          1hr 10min
-        </div>
-        <div className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
-          +32 min than average
-        </div>
-      </div>
-
-      {/* Pending Submissions */}
-      <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-zinc-900/50 border border-zinc-800/50' : 'bg-white border border-gray-200'}`}>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
-            <i className="ph ph-clock text-amber-600 text-xl" />
-          </div>
-          <span className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Pending Submissions</span>
-        </div>
-        <div className={`text-3xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          5
-        </div>
-        <div className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
-          +2 this week
-        </div>
-      </div>
-
-      {/* Ongoing Courses */}
-      <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-zinc-900/50 border border-zinc-800/50' : 'bg-white border border-gray-200'}`}>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center">
-            <i className="ph ph-book-open text-teal-600 text-xl" />
-          </div>
-          <span className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Ongoing Courses</span>
-        </div>
-        <div className={`text-3xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          3
-        </div>
-        <div className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
-          +2 this month
-        </div>
+        ))}
       </div>
     </div>
   )

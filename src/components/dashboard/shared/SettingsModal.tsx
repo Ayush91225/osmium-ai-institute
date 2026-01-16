@@ -417,23 +417,25 @@ function SettingsModal({ isOpen, onClose, role = 'admin' }: SettingsModalProps) 
                     }`} style={{ fontSize: '12px' }} />
                   </button>
                   
-                  <button className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all duration-200 text-left border ${
-                    isDarkMode 
-                      ? 'hover:bg-zinc-800/30 border-zinc-800/30 hover:border-zinc-700/50 hover:scale-[1.02]' 
-                      : 'hover:bg-gray-50/80 border-gray-200/30 hover:border-gray-300/50 hover:scale-[1.02]'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <i className={`ph ph-credit-card ${
-                        isDarkMode ? 'text-zinc-500' : 'text-gray-400'
-                      }`} style={{ fontSize: '16px' }} />
-                      <span className={`text-sm font-medium ${
-                        isDarkMode ? 'text-zinc-300' : 'text-gray-700'
-                      }`}>Billing</span>
-                    </div>
-                    <i className={`ph ph-caret-right ${
-                      isDarkMode ? 'text-zinc-600' : 'text-gray-400'
-                    }`} style={{ fontSize: '12px' }} />
-                  </button>
+                  {role !== 'student' && (
+                    <button className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all duration-200 text-left border ${
+                      isDarkMode 
+                        ? 'hover:bg-zinc-800/30 border-zinc-800/30 hover:border-zinc-700/50 hover:scale-[1.02]' 
+                        : 'hover:bg-gray-50/80 border-gray-200/30 hover:border-gray-300/50 hover:scale-[1.02]'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <i className={`ph ph-credit-card ${
+                          isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                        }`} style={{ fontSize: '16px' }} />
+                        <span className={`text-sm font-medium ${
+                          isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                        }`}>Billing</span>
+                      </div>
+                      <i className={`ph ph-caret-right ${
+                        isDarkMode ? 'text-zinc-600' : 'text-gray-400'
+                      }`} style={{ fontSize: '12px' }} />
+                    </button>
+                  )}
                   
                   <button className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all duration-200 text-left border ${
                     isDarkMode 

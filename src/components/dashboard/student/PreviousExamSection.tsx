@@ -7,52 +7,60 @@ function PreviousExamSection() {
   const { isDarkMode } = useDarkMode()
 
   const exams = [
-    { name: 'JEE Mains', date: '2 Sep 2025', score: '120/300', color: '#10b981' },
-    { name: 'JEE Mains', date: '28 Aug 2025', score: '102/300', color: '#10b981' },
-    { name: 'JEE Mains', date: '18 Aug 2025', score: '85/300', color: '#f59e0b' },
-    { name: 'JEE Mains', date: '15 Aug 2025', score: '59/300', color: '#eab308' },
+    { name: 'JEE Mains', date: '2 Sep 2025', score: '120/300', color: isDarkMode ? 'bg-amber-900' : 'bg-[#6B5344]' },
+    { name: 'JEE Mains', date: '28 Aug 2025', score: '102/300', color: isDarkMode ? 'bg-stone-700' : 'bg-[#9B9B7A]' },
+    { name: 'JEE Mains', date: '18 Aug 2025', score: '85/300', color: isDarkMode ? 'bg-orange-800' : 'bg-[#D4A574]' },
+    { name: 'JEE Mains', date: '15 Aug 2025', score: '59/300', color: isDarkMode ? 'bg-lime-800' : 'bg-[#D9D7A8]' },
   ]
 
+  const totalTests = 15
+  const displayedTests = exams.length
+
   return (
-    <div className={`rounded-xl p-6 ${isDarkMode ? 'bg-zinc-900/50 border border-zinc-800/50' : 'bg-white border border-gray-200'}`}>
-      <div className="flex items-center justify-between mb-6">
+    <div className={`rounded-xl p-6 border ${isDarkMode ? 'bg-zinc-900/50 border-zinc-800/50' : 'bg-white border-gray-200'}`}>
+      <div className="flex items-start justify-between mb-2">
         <div>
           <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             Previous Exam Test Performances
           </h3>
-          <p className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+          <p className={`text-sm mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
             See previous done exam tests
           </p>
         </div>
+        <button className={`p-1 ${isDarkMode ? 'text-zinc-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2"/>
+            <circle cx="12" cy="12" r="2"/>
+            <circle cx="12" cy="19" r="2"/>
+          </svg>
+        </button>
       </div>
 
-      {/* Progress bar */}
-      <div className="flex gap-1 mb-6">
-        <div className="flex-1 h-2 rounded-full bg-green-500"></div>
-        <div className="flex-1 h-2 rounded-full bg-green-400"></div>
-        <div className="flex-1 h-2 rounded-full bg-yellow-500"></div>
-        <div className="flex-1 h-2 rounded-full bg-yellow-400"></div>
+      <div className="flex gap-1 mt-6 mb-6">
+        {exams.map((exam, index) => (
+          <div key={index} className={`h-1.5 flex-1 rounded-full ${exam.color}`} />
+        ))}
       </div>
 
       <div className="space-y-3">
         {exams.map((exam, index) => (
-          <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${isDarkMode ? 'bg-zinc-800/50' : 'bg-gray-50'}`}>
+          <div key={index} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: exam.color }}></div>
+              <div className={`w-4 h-4 rounded ${exam.color}`} />
               <div>
-                <h4 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                   {exam.name}
-                </h4>
-                <p className={`text-xs ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
-                  {exam.date}
-                </p>
+                </span>
+                <span className={`text-sm ml-2 ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                  - {exam.date}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <button className={`text-sm ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+              <button className={`px-4 py-1.5 rounded-lg text-sm ${isDarkMode ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                 View Result
               </button>
-              <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <span className={`font-semibold min-w-[70px] text-right ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {exam.score}
               </span>
             </div>
@@ -60,13 +68,14 @@ function PreviousExamSection() {
         ))}
       </div>
 
-      <button className={`w-full mt-4 py-2 text-sm ${isDarkMode ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600 hover:text-orange-700'}`}>
-        View All Results
-      </button>
-
-      <p className={`text-xs text-center mt-2 ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
-        4 out 15 Tests
-      </p>
+      <div className={`flex items-center justify-between mt-6 pt-4 border-t ${isDarkMode ? 'border-zinc-800' : 'border-gray-200'}`}>
+        <span className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+          {displayedTests} out {totalTests} Tests
+        </span>
+        <button className={`text-sm font-medium ${isDarkMode ? 'text-amber-400 hover:text-amber-300' : 'text-amber-700 hover:text-amber-800'}`}>
+          View All Results
+        </button>
+      </div>
     </div>
   )
 }

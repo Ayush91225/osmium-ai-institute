@@ -32,7 +32,8 @@ function HelpSupportContent() {
   return (
     <>
     <DashboardLayout role="student">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="h-screen overflow-y-auto p-4 md:p-8 lg:p-12">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:gap-6 mt-12 md:mt-0">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4 md:mb-6">
@@ -323,6 +324,7 @@ function HelpSupportContent() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </DashboardLayout>
     

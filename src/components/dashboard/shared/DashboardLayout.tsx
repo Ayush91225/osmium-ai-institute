@@ -58,7 +58,7 @@ export default function DashboardLayout({ children, role = 'admin' }: DashboardL
       )}
 
       {/* Main Content */}
-      <main className={`min-h-screen overflow-y-auto p-4 md:p-8 lg:p-12 lg:ml-[280px] relative scroll-smooth will-change-transform ${mounted && isDarkMode ? 'text-zinc-100 bg-zinc-950/95' : 'text-gray-900 bg-bg'
+      <main className={`h-screen overflow-hidden lg:ml-[280px] relative ${mounted && isDarkMode ? 'text-zinc-100 bg-zinc-950/95' : 'text-gray-900 bg-bg'
         }`}>
         <MobileToggle onClick={toggleSidebar} />
 

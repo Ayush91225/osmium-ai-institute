@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 
 export default function MockTestPage() {
+  const router = useRouter()
   const { isDarkMode } = useDarkMode()
   const [currentSubject, setCurrentSubject] = useState('Physics')
   const [currentQuestion, setCurrentQuestion] = useState(1)
@@ -204,7 +206,7 @@ export default function MockTestPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowModal(false)} className={`flex-1 py-3 border rounded-lg font-medium ${isDarkMode ? 'border-zinc-700 text-white hover:bg-zinc-800' : 'border-gray-300 hover:bg-gray-50'}`}>Cancel</button>
-              <button onClick={() => alert('Test submitted!')} className={`flex-1 py-3 rounded-lg font-medium ${isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-900'}`}>Submit</button>
+              <button onClick={() => router.push('/dashboard/student/exam/mock-test/analytic')} className={`flex-1 py-3 rounded-lg font-medium ${isDarkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-900'}`}>Submit</button>
             </div>
           </div>
         </div>

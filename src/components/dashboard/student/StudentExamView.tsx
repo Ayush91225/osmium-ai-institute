@@ -13,7 +13,8 @@ function StudentExamView() {
   const { isDarkMode } = useDarkMode()
 
   return (
-    <div className="space-y-6">
+    <div className="h-screen overflow-y-auto p-4 md:p-8 lg:p-12">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -676,6 +677,7 @@ function StudentExamView() {
             </button>
           </div>
         </div>
+      </div>
       </div>
       </div>
     </div>

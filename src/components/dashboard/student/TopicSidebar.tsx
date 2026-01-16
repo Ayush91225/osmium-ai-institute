@@ -27,7 +27,7 @@ function TopicSidebar({ courseId, topicId, topicName, activePage = 'overview' }:
   ]
 
   return (
-    <aside className={`w-[360px] border-l flex-shrink-0 hidden lg:block h-screen overflow-hidden ${
+    <aside className={`w-[360px] border-l flex-shrink-0 hidden lg:block h-screen overflow-y-auto ${
       isDarkMode ? 'bg-zinc-900/50 border-zinc-800' : 'bg-[#F7F5F3] border-gray-200'
     }`}>
       <div className="p-6 lg:p-8">
