@@ -8,9 +8,10 @@ import { useLanguage } from '@/contexts/LanguageContext'
 interface SettingsModalProps {
   isOpen: boolean
   onClose: () => void
+  role?: 'admin' | 'student' | 'teacher'
 }
 
-function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+function SettingsModal({ isOpen, onClose, role = 'admin' }: SettingsModalProps) {
   const [userData, setUserData] = useState<any>(null)
   const [showProfileDetails, setShowProfileDetails] = useState(false)
   const [showLanguageOptions, setShowLanguageOptions] = useState(false)
@@ -48,13 +49,31 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી' }
   ]
 
+  const getStudentAvatar = () => {
+    return 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=12A008&radius=0&backgroundType[]&eyes=variant01,variant02,variant03,variant05,variant06,variant04,variant07,variant08,variant09,variant10,variant12,variant11,variant13,variant14,variant15,variant26,variant25,variant24,variant22,variant23,variant21,variant20&glassesProbability=30&mouth=variant01,variant02,variant03,variant04,variant05,variant07,variant08,variant09,variant10,variant11,variant12,variant13,variant14,variant15,variant16,variant17,variant18,variant19,variant20,variant21,variant22,variant23,variant24,variant25,variant26,variant27,variant28,variant29,variant30'
+  }
+
   const getAvatarUrl = (userId: string) => {
+    if (role === 'student') {
+      return getStudentAvatar()
+    }
     const seed = encodeURIComponent(userId)
     const backgroundColor = '4747eb,4762eb,477eeb,4799eb,47b4eb,47d0eb,47eb47,47eb62,47eb7e,47eb99,47ebb4,47ebd0,47ebeb,6247eb,62eb47,7e47eb,7eeb47,9947eb,99eb47,b447eb,b4eb47,d047eb,d0eb47,eb4747,eb4762,eb477e,eb4799,eb47d0,eb47eb,eb6247,eb7e47,eb9947,ebb447,ebd047,ebeb47,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9'
     const backgroundType = 'gradientLinear'
     const backgroundRotation = '0,360,10,20,30'
     
     return `https://api.dicebear.com/9.x/glass/svg?seed=${seed}&backgroundColor=${backgroundColor}&backgroundType=${backgroundType}&backgroundRotation=${backgroundRotation}`
+  }
+
+  const getUserName = () => {
+    if (role === 'student') return userData?.name || 'Sneha Singh'
+    return userData?.name || 'Admin User'
+  }
+
+  const getUserLabel = () => {
+    if (role === 'student') return userData?.id || '9B022'
+    if (role === 'teacher') return 'Teacher'
+    return 'Administrator'
   }
 
   if (!isOpen) return null
@@ -118,10 +137,10 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <div className="flex-1">
                       <div className={`text-sm font-semibold ${
                         isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                      }`}>{userData?.name || 'Admin User'}</div>
+                      }`}>{getUserName()}</div>
                       <div className={`text-xs font-medium ${
                         isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                      }`}>Administrator</div>
+                      }`}>{getUserLabel()}</div>
                     </div>
                     <button 
                       onClick={() => setShowProfileDetails(!showProfileDetails)}
@@ -141,11 +160,133 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       isDarkMode ? 'border-zinc-800/50' : 'border-gray-200/50'
                     }`}>
                       <div className="space-y-4">
-                        <div>
-                          <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
-                            isDarkMode ? 'text-zinc-300' : 'text-gray-700'
-                          }`}>Institute Details</h4>
-                          <div className="grid grid-cols-1 gap-2 text-xs">
+                        {role === 'student' ? (
+                          <>
+                            <div>
+                              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
+                                isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                              }`}>Student Details</h4>
+                              <div className="grid grid-cols-1 gap-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Name:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.name || 'Sneha Singh'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Roll Number:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.id || '9B022'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Email:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.email || 'sneha.singh@student.osmium.co.in'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Phone:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.phone || '+91 98765 12345'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Class:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.class || 'Grade 12 - Science'}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
+                                isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                              }`}>Academic Information</h4>
+                              <div className="grid grid-cols-1 gap-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Department:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.department || 'Computer Science'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Course:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.course || 'B.Tech'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Admission Date:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.admissionDate || '15 Aug 2023'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Status:</span>
+                                  <span className="text-[#8C7B65] font-semibold">Active</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
+                                isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                              }`}>Parent/Guardian Details</h4>
+                              <div className="grid grid-cols-1 gap-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Name:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.parentName || 'Rajesh Singh'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Email:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.parentEmail || 'rajesh.singh@email.com'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Contact:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.parentContact || '+91 98765 54321'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
+                                isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                              }`}>Institute Details</h4>
+                              <div className="grid grid-cols-1 gap-2 text-xs">
                             <div className="flex justify-between">
                               <span className={`font-medium ${
                                 isDarkMode ? 'text-zinc-500' : 'text-gray-500'
@@ -176,14 +317,14 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                               }`}>Website:</span>
                               <a href="https://osmium.co.in" target="_blank" rel="noopener noreferrer" className="text-[#8C7B65] font-semibold hover:underline transition-all duration-200 hover:text-[#A0906F]">osmium.co.in</a>
                             </div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
-                            isDarkMode ? 'text-zinc-300' : 'text-gray-700'
-                          }`}>Authorized Signatory</h4>
-                          <div className="grid grid-cols-1 gap-2 text-xs">
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
+                                isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                              }`}>Authorized Signatory</h4>
+                              <div className="grid grid-cols-1 gap-2 text-xs">
                             <div className="flex justify-between">
                               <span className={`font-medium ${
                                 isDarkMode ? 'text-zinc-500' : 'text-gray-500'
@@ -214,14 +355,14 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                               }`}>Role:</span>
                               <span className="text-[#8C7B65] font-semibold">{userData?.type || 'Administrator'}</span>
                             </div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
-                            isDarkMode ? 'text-zinc-300' : 'text-gray-700'
-                          }`}>Location</h4>
-                          <div className="text-xs">
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
+                                isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                              }`}>Location</h4>
+                              <div className="text-xs">
                             <div className="mb-2">
                               <span className={`font-medium ${
                                 isDarkMode ? 'text-zinc-500' : 'text-gray-500'
@@ -240,7 +381,9 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                               </a>
                             </div>
                           </div>
-                        </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}

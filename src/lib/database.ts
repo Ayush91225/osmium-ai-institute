@@ -242,8 +242,13 @@ class DatabaseSimulator {
 
   private loadFromStorage<T>(key: string, defaultData: any): T[] {
     if (typeof window === 'undefined') return defaultData as T[]
-    const stored = localStorage.getItem(key)
-    return stored ? JSON.parse(stored) : defaultData
+    try {
+      const stored = localStorage.getItem(key)
+      return stored ? JSON.parse(stored) : defaultData
+    } catch (error) {
+      console.error(`Error loading ${key} from storage:`, error)
+      return defaultData
+    }
   }
 
   private saveToStorage(key: string, data: any) {
@@ -355,20 +360,23 @@ class DatabaseSimulator {
       }
     })
     
-    // Cascade: Delete related assignments, materials, and tests
+    // Cascade: Delete related assignments, materials, tests, and test papers
     this.assignments = this.assignments.filter(a => a.subjectId !== id)
     this.materials = this.materials.filter(m => m.subjectId !== id)
     this.tests = this.tests.filter(t => t.subjectId !== id)
+    this.testPapers = this.testPapers.filter(p => !p.paperSubjects.includes(id))
     
     this.subjects = this.subjects.filter(s => s.id !== id)
     this.saveToStorage('subjects', this.subjects)
     this.saveToStorage('assignments', this.assignments)
     this.saveToStorage('materials', this.materials)
     this.saveToStorage('tests', this.tests)
+    this.saveToStorage('testPapers', this.testPapers)
     this.notify('subjects')
     this.notify('classes')
     this.notify('students')
     this.notify('teachers')
+    this.notify('testPapers')
   }
   
   // Subject helpers

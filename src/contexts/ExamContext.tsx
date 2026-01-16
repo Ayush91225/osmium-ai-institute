@@ -204,7 +204,13 @@ export function ExamProvider({ children }: { children: ReactNode }) {
     },
     deleteExam: (id: string) => {
       const db = getDatabase()
-      if (db) db.updateTest(id, { status: 'completed' })
+      if (db) {
+        const tests = db.getTests()
+        const testToDelete = tests.find(t => t.id === id)
+        if (testToDelete) {
+          db.updateTest(id, { status: 'completed' })
+        }
+      }
       setExams(prev => prev.filter(e => e.id !== id))
     },
     setSearchTerm,
