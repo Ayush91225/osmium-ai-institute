@@ -26,7 +26,7 @@ const adminNavigationItems = [
 const studentNavigationItems = [
   { href: '/dashboard/student', icon: 'ph-squares-four', label: 'Dashboard' },
   { href: '/dashboard/student/learn', icon: 'ph-book-open', label: 'Learn' },
-  { href: '/dashboard/student/exam-test', icon: 'ph-exam', label: 'Exam & Tests' },
+  { href: '/dashboard/student/exam', icon: 'ph-exam', label: 'Exam & Tests' },
   { href: '/dashboard/student/ai-mentor', icon: 'ph-robot', label: 'AI Mentor' },
   { href: '/dashboard/student/projects', icon: 'ph-folder-open', label: 'Project Submissions' },
 ]
@@ -40,7 +40,7 @@ const adminOtherItems = [
 
 const studentOtherItems = [
   { href: '/dashboard/student/notifications', icon: 'ph-bell', label: 'Notification' },
-  { href: '/dashboard/help', icon: 'ph-question', label: 'Help & Support' },
+  { href: '/dashboard/student/help', icon: 'ph-question', label: 'Help & Support' },
 ]
 
 function Sidebar({ isOpen, onClose, role = 'admin' }: SidebarProps) {
@@ -186,7 +186,7 @@ function Sidebar({ isOpen, onClose, role = 'admin' }: SidebarProps) {
       </div>
       
       {/* User Profile */}
-      <UserProfile />
+      <UserProfile role={role} />
     </aside>
   )
 }

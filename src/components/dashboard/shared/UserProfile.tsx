@@ -11,7 +11,11 @@ interface UserData {
   id?: string
 }
 
-function UserProfile() {
+interface UserProfileProps {
+  role?: 'admin' | 'student' | 'teacher'
+}
+
+function UserProfile({ role = 'admin' }: UserProfileProps) {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -35,13 +39,31 @@ function UserProfile() {
     setIsSettingsOpen(true)
   }
 
+  const getStudentAvatar = () => {
+    return 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=12A008&radius=0&backgroundType[]&eyes=variant01,variant02,variant03,variant05,variant06,variant04,variant07,variant08,variant09,variant10,variant12,variant11,variant13,variant14,variant15,variant26,variant25,variant24,variant22,variant23,variant21,variant20&glassesProbability=30&mouth=variant01,variant02,variant03,variant04,variant05,variant07,variant08,variant09,variant10,variant11,variant12,variant13,variant14,variant15,variant16,variant17,variant18,variant19,variant20,variant21,variant22,variant23,variant24,variant25,variant26,variant27,variant28,variant29,variant30'
+  }
+
   const getAvatarUrl = (userId: string) => {
+    if (role === 'student') {
+      return getStudentAvatar()
+    }
     const seed = encodeURIComponent(userId)
     const backgroundColor = '4747eb,4762eb,477eeb,4799eb,47b4eb,47d0eb,47eb47,47eb62,47eb7e,47eb99,47ebb4,47ebd0,47ebeb,6247eb,62eb47,7e47eb,7eeb47,9947eb,99eb47,b447eb,b4eb47,d047eb,d0eb47,eb4747,eb4762,eb477e,eb4799,eb47d0,eb47eb,eb6247,eb7e47,eb9947,ebb447,ebd047,ebeb47,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9'
     const backgroundType = 'gradientLinear'
     const backgroundRotation = '0,360,10,20,30'
     
     return `https://api.dicebear.com/9.x/glass/svg?seed=${seed}&backgroundColor=${backgroundColor}&backgroundType=${backgroundType}&backgroundRotation=${backgroundRotation}`
+  }
+
+  const getUserLabel = () => {
+    if (role === 'student') return userData?.id || '9B022'
+    if (role === 'teacher') return 'Teacher'
+    return 'Administrator'
+  }
+
+  const getUserName = () => {
+    if (role === 'student') return userData?.name || 'Sneha Singh'
+    return userData?.name || 'Admin User'
   }
 
   return (
@@ -68,12 +90,12 @@ function UserProfile() {
             <div className={`text-sm font-medium truncate ${
               mounted && isDarkMode ? 'text-zinc-100' : 'text-gray-900'
             }`}>
-              {userData?.name || 'Admin User'}
+              {getUserName()}
             </div>
             <div className={`text-xs truncate ${
               mounted && isDarkMode ? 'text-zinc-400' : 'text-gray-500'
             }`}>
-              Administrator
+              {getUserLabel()}
             </div>
           </div>
           <div className={`flex-shrink-0 ${
@@ -86,7 +108,8 @@ function UserProfile() {
       
       <SettingsModal 
         isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+        onClose={() => setIsSettingsOpen(false)}
+        role={role}
       />
     </>
   )

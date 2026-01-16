@@ -8,9 +8,10 @@ import MobileToggle from './MobileToggle'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
+  role?: 'admin' | 'student' | 'teacher'
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, role = 'admin' }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -45,7 +46,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className={`min-h-screen h-full ${mounted && isDarkMode ? 'bg-zinc-950/95' : 'bg-bg'
       }`}>
-      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} role={role} />
 
       {/* Mobile Overlay */}
       {sidebarOpen && (
