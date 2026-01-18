@@ -23,7 +23,23 @@ module.exports = {
         'accent-dark': '#D8D4CD',
         'tag-bg': '#F2EDE4',
         'tag-text': '#8C7B65',
-        'chart-blue': '#6EA8FE'
+        'chart-blue': '#6EA8FE',
+        brand: {
+          gold: '#C89B4F',
+          goldHover: '#B08640',
+          sidebarActive: '#EBEBEB',
+          bg: '#F9FAFB',
+        },
+        status: {
+          greenBg: '#ECFDF5',
+          greenText: '#047857',
+          redBg: '#FEF2F2',
+          redText: '#B91C1C',
+          yellowBg: '#FFFBEB',
+          yellowText: '#B45309',
+          orangeBg: '#FFF7ED',
+          orangeText: '#C2410C',
+        }
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',

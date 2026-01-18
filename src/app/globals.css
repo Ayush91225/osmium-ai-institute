@@ -24,13 +24,11 @@ body {
   transition: background-color 0.1s ease, color 0.1s ease;
 }
 
-/* Dark mode styles */
 .dark body {
   background: rgba(9, 9, 11, 0.95);
   color: #fafafa;
 }
 
-/* Custom Scrollbars */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -63,7 +61,6 @@ body {
   scrollbar-width: none;
 }
 
-/* Dashboard Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -82,7 +79,6 @@ body {
   animation: slideIn 0.3s ease-out;
 }
 
-/* Performance Optimizations */
 .will-change-transform {
   will-change: transform;
 }
@@ -92,7 +88,6 @@ body {
   backface-visibility: hidden;
 }
 
-/* Dashboard Specific Styles */
 .shadow-card {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
