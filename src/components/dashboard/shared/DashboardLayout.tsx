@@ -8,9 +8,10 @@ import MobileToggle from './MobileToggle'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
+  userType?: 'admin' | 'teacher'
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, userType = 'admin' }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
@@ -20,7 +21,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     setMounted(true)
   }, [])
 
-  // Optimized toggle function with useCallback
   const toggleSidebar = useCallback(() => {
     setSidebarOpen(prev => !prev)
   }, [])
@@ -29,26 +29,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     setSidebarOpen(false)
   }, [])
 
-  // Prevent body scroll when sidebar is open on mobile
   useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
+    if (typeof window !== 'undefined' && document?.body) {
+      document.body.style.overflow = sidebarOpen ? 'hidden' : 'unset'
     }
 
     return () => {
-      document.body.style.overflow = 'unset'
+      if (typeof window !== 'undefined' && document?.body) {
+        document.body.style.overflow = 'unset'
+      }
     }
   }, [sidebarOpen])
 
   return (
     <div className={`min-h-screen h-full ${
       mounted && isDarkMode ? 'bg-zinc-950/95' : 'bg-bg'
-    }`}>
-      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+    }`} suppressHydrationWarning>
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} userType={userType} />
       
-      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -57,10 +55,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         />
       )}
       
-      {/* Main Content */}
       <main className={`min-h-screen overflow-y-auto p-4 md:p-8 lg:p-12 lg:ml-[280px] relative scroll-smooth will-change-transform ${
         mounted && isDarkMode ? 'text-zinc-100 bg-zinc-950/95' : 'text-gray-900 bg-bg'
-      }`}>
+      }`} suppressHydrationWarning>
         <MobileToggle onClick={toggleSidebar} />
         
         {children}

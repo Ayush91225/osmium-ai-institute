@@ -10,9 +10,10 @@ import UserProfile from './UserProfile'
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
+  userType?: 'admin' | 'teacher'
 }
 
-const navigationItems = [
+const adminNavItems = [
   { href: '/dashboard/admin', icon: 'ph-squares-four', label: 'Dashboard' },
   { href: '/dashboard/admin/teachers', icon: 'ph-chalkboard-teacher', label: 'Teachers' },
   { href: '/dashboard/admin/approvals', icon: 'ph-clock', label: 'Pending Approvals' },
@@ -22,14 +23,26 @@ const navigationItems = [
   { href: '/dashboard/exams', icon: 'ph-exam', label: 'Exam & Tests' },
 ]
 
-const otherItems = [
-  { href: '/dashboard/admin/notifications', icon: 'ph-bell', label: 'Notifications' },
-  { href: '/dashboard/admin/subscription', icon: 'ph-crown', label: 'Subscription' },
-  { href: '/dashboard/admin/billing', icon: 'ph-currency-inr', label: 'Billing' },
+const teacherNavItems = [
+  { href: '/dashboard/teacher', icon: 'ph-squares-four', label: 'Dashboard' },
+  { href: '/dashboard/teacher/students', icon: 'ph-users', label: 'Student Management' },
+  { href: '/dashboard/teacher/projects', icon: 'ph-book', label: 'Project Management' },
+  { href: '/dashboard/teacher/exams', icon: 'ph-clipboard-text', label: 'Exam & Tests' },
+  { href: '/dashboard/teacher/ai-mentor', icon: 'ph-chats-circle', label: 'AI Mentor' },
+  { href: '/dashboard/teacher/analytics', icon: 'ph-graduation-cap', label: 'Analytics' },
+]
+
+const adminOtherItems = [
+  { href: '/dashboard/notifications', icon: 'ph-bell', label: 'Notifications' },
   { href: '/dashboard/help', icon: 'ph-question', label: 'Help & Support' },
 ]
 
-function Sidebar({ isOpen, onClose }: SidebarProps) {
+const teacherOtherItems = [
+  { href: '/dashboard/teacher/notifications', icon: 'ph-bell', label: 'Notifications' },
+  { href: '/dashboard/teacher/help', icon: 'ph-question', label: 'Help & Support' },
+]
+
+function Sidebar({ isOpen, onClose, userType = 'admin' }: SidebarProps) {
   const pathname = usePathname()
   const { isDarkMode } = useDarkMode()
   const [mounted, setMounted] = useState(false)
@@ -37,6 +50,9 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const navigationItems = userType === 'teacher' ? teacherNavItems : adminNavItems
+  const otherItems = userType === 'teacher' ? teacherOtherItems : adminOtherItems
 
   return (
     <aside 
@@ -169,7 +185,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
       </div>
       
       {/* User Profile */}
-      <UserProfile />
+      <UserProfile userType={userType} />
     </aside>
   )
 }

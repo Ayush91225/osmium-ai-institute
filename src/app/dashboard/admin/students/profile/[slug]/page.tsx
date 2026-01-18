@@ -12,9 +12,6 @@ import StatusChip from '@/components/dashboard/admin/StatusChip'
 import StudentSidebar from '@/components/dashboard/admin/StudentSidebar'
 import TabNavigation from '@/components/dashboard/admin/TabNavigation'
 import TestCard from '@/components/dashboard/admin/TestCard'
-import dynamic from 'next/dynamic'
-
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false })
 
 export default function StudentProfilePage() {
   const params = useParams()
@@ -286,40 +283,14 @@ export default function StudentProfilePage() {
                             isDarkMode ? 'text-zinc-300' : 'text-gray-700'
                           }`}>{study.score}%</span>
                         </div>
-                        {mounted && (
-                          <div className="h-16">
-                            <Chart
-                              options={{
-                                chart: { 
-                                  type: 'bar', 
-                                  toolbar: { show: false }, 
-                                  background: 'transparent',
-                                  sparkline: { enabled: true }
-                                },
-                                plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '30%' } },
-                                dataLabels: { enabled: false },
-                                xaxis: { 
-                                  categories: [study.topic], 
-                                  labels: { show: false }, 
-                                  max: 100,
-                                  axisBorder: { show: false },
-                                  axisTicks: { show: false }
-                                },
-                                yaxis: { 
-                                  labels: { show: false },
-                                  axisBorder: { show: false },
-                                  axisTicks: { show: false }
-                                },
-                                colors: ['#8C7B65'],
-                                grid: { show: false },
-                                theme: { mode: isDarkMode ? 'dark' : 'light' }
-                              }}
-                              series={[{ name: 'Progress', data: [study.score] }]}
-                              type="bar"
-                              height={64}
-                            />
-                          </div>
-                        )}
+                        <div className={`w-full h-2 rounded-full ${
+                          isDarkMode ? 'bg-zinc-700' : 'bg-gray-200'
+                        }`}>
+                          <div 
+                            className="h-2 rounded-full bg-[#8C7B65] transition-all duration-1000"
+                            style={{ width: `${study.score}%` }}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

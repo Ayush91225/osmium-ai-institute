@@ -177,7 +177,7 @@ function TeacherSidebar({ isOpen, onClose }: TeacherSidebarProps) {
             <Link
               href="/dashboard/teacher/exams"
               className={`flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline ${
-                pathname === '/dashboard/teacher/exams'
+                pathname?.startsWith('/dashboard/teacher/exams')
                   ? mounted && isDarkMode
                     ? 'bg-zinc-800 text-zinc-100 font-medium'
                     : 'bg-[#e8e3da] text-[#2e2e2e] font-medium'
@@ -193,7 +193,7 @@ function TeacherSidebar({ isOpen, onClose }: TeacherSidebarProps) {
               onClick={onClose}
               suppressHydrationWarning
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20" fill="currentColor">
                 <rect width="256" height="256" fill="none" />
                 <path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z" />
               </svg>

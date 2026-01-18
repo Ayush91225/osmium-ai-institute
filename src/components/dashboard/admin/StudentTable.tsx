@@ -3,7 +3,7 @@
 import { memo, useState, useEffect } from 'react'
 import { useDarkMode } from '@/contexts/DarkModeContext'
 import { Student, useStudents } from '@/contexts/StudentContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import StatusChip from './StatusChip'
 import DeleteConfirmModal from './DeleteConfirmModal'
 
@@ -15,6 +15,7 @@ function StudentTable({ students }: StudentTableProps) {
   const { isDarkMode } = useDarkMode()
   const { deleteStudent } = useStudents()
   const router = useRouter()
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; student: Student | null }>({ isOpen: false, student: null })
 
@@ -23,7 +24,12 @@ function StudentTable({ students }: StudentTableProps) {
   }, [])
 
   const handleStudentClick = (student: Student) => {
-    router.push(`/dashboard/admin/students/profile/${student.rollNumber}`)
+    const isTeacher = pathname.includes('/teacher/')
+    if (isTeacher) {
+      router.push('/dashboard/teacher/students/profile')
+    } else {
+      router.push(`/dashboard/admin/students/profile/${student.rollNumber}`)
+    }
   }
 
   const handleDeleteClick = (e: React.MouseEvent, student: Student) => {

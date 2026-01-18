@@ -1,15 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useDarkMode } from '@/contexts/DarkModeContext';
 
 interface DateRangePickerProps {
   onClose: () => void;
 }
 
 export default function DateRangePicker({ onClose }: DateRangePickerProps) {
+  const { isDarkMode } = useDarkMode();
+  const [mounted, setMounted] = useState(false);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 10, 1)); // November 2025
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -90,19 +99,31 @@ export default function DateRangePicker({ onClose }: DateRangePickerProps) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white w-[920px] max-w-[95vw] rounded-2xl p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className={`w-[920px] max-w-[95vw] rounded-2xl p-6 shadow-2xl ${
+        isDarkMode ? 'bg-zinc-900' : 'bg-white'
+      }`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <div className="text-xl font-semibold text-[#1a1a1a]">Select date range</div>
+          <div className={`text-xl font-semibold ${
+            isDarkMode ? 'text-zinc-100' : 'text-[#1a1a1a]'
+          }`}>Select date range</div>
           <div className="flex gap-2">
             <button
               onClick={handlePrev}
-              className="w-9 h-9 rounded-lg border border-[#f0f0f0] bg-white hover:bg-[#f5f5f5] hover:border-[#e0e0e0] flex items-center justify-center text-lg text-[#666] transition-all"
+              className={`w-9 h-9 rounded-lg border flex items-center justify-center text-lg transition-all ${
+                isDarkMode 
+                  ? 'border-zinc-700 bg-zinc-800 hover:bg-zinc-700 hover:border-zinc-600 text-zinc-400' 
+                  : 'border-[#f0f0f0] bg-white hover:bg-[#f5f5f5] hover:border-[#e0e0e0] text-[#666]'
+              }`}
             >
               ‹
             </button>
             <button
               onClick={handleNext}
-              className="w-9 h-9 rounded-lg border border-[#f0f0f0] bg-white hover:bg-[#f5f5f5] hover:border-[#e0e0e0] flex items-center justify-center text-lg text-[#666] transition-all"
+              className={`w-9 h-9 rounded-lg border flex items-center justify-center text-lg transition-all ${
+                isDarkMode 
+                  ? 'border-zinc-700 bg-zinc-800 hover:bg-zinc-700 hover:border-zinc-600 text-zinc-400' 
+                  : 'border-[#f0f0f0] bg-white hover:bg-[#f5f5f5] hover:border-[#e0e0e0] text-[#666]'
+              }`}
             >
               ›
             </button>
@@ -112,14 +133,18 @@ export default function DateRangePicker({ onClose }: DateRangePickerProps) {
         <div className="flex gap-8 mb-6">
           {[leftMonth, rightMonth].map((month, idx) => (
             <div key={idx} className="flex-1">
-              <div className="text-center font-semibold text-[#1a1a1a] mb-4 text-lg">
+              <div className={`text-center font-semibold mb-4 text-lg ${
+                isDarkMode ? 'text-zinc-100' : 'text-[#1a1a1a]'
+              }`}>
                 {monthNames[month.getMonth()]} / {month.getFullYear()}
               </div>
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
                     {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day) => (
-                      <th key={day} className="text-[#666] font-semibold text-[13px] pb-3 text-center">{day}</th>
+                      <th key={day} className={`font-semibold text-[13px] pb-3 text-center ${
+                        isDarkMode ? 'text-zinc-400' : 'text-[#666]'
+                      }`}>{day}</th>
                     ))}
                   </tr>
                 </thead>
@@ -134,12 +159,16 @@ export default function DateRangePicker({ onClose }: DateRangePickerProps) {
                         return (
                           <td
                             key={dayIdx}
-                            className={`text-center p-1.5 h-10 relative ${inRange ? 'bg-[#f0ede8]' : ''} ${!day.isCurrentMonth ? 'text-[#ccc]' : ''}`}
+                            className={`text-center p-1.5 h-10 relative ${
+                              inRange ? (isDarkMode ? 'bg-zinc-800' : 'bg-[#f0ede8]') : ''
+                            } ${!day.isCurrentMonth ? (isDarkMode ? 'text-zinc-700' : 'text-[#ccc]') : ''}`}
                             onClick={() => handleDateClick(day.date)}
                           >
                             <span
                               className={`inline-block w-7 h-7 leading-7 text-center rounded-full text-sm cursor-pointer transition-all ${
-                                isStart || isEnd ? 'bg-[#c79647] text-white' : 'hover:bg-gray-100'
+                                isStart || isEnd 
+                                  ? 'bg-[#c79647] text-white' 
+                                  : (isDarkMode ? 'hover:bg-zinc-800' : 'hover:bg-gray-100')
                               }`}
                             >
                               {day.date.getDate()}
@@ -158,7 +187,11 @@ export default function DateRangePicker({ onClose }: DateRangePickerProps) {
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-lg bg-[#f5f5f5] text-[#666] border border-[#e0e0e0] hover:bg-[#eeeeee] font-medium text-sm transition-all"
+            className={`px-5 py-2.5 rounded-lg border font-medium text-sm transition-all ${
+              isDarkMode 
+                ? 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700' 
+                : 'bg-[#f5f5f5] text-[#666] border-[#e0e0e0] hover:bg-[#eeeeee]'
+            }`}
           >
             Cancel
           </button>

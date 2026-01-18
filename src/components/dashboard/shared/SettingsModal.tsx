@@ -8,9 +8,10 @@ import { useLanguage } from '@/contexts/LanguageContext'
 interface SettingsModalProps {
   isOpen: boolean
   onClose: () => void
+  userType?: 'admin' | 'teacher'
 }
 
-function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+function SettingsModal({ isOpen, onClose, userType = 'admin' }: SettingsModalProps) {
   const [userData, setUserData] = useState<any>(null)
   const [showProfileDetails, setShowProfileDetails] = useState(false)
   const [showLanguageOptions, setShowLanguageOptions] = useState(false)
@@ -47,6 +48,17 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ' },
     { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી' }
   ]
+
+  const teacherData = {
+    name: 'Dr. Sarah Johnson',
+    subject: 'Mathematics',
+    email: 'sarah.johnson@osmium.co.in',
+    phone: '+91 98765 43211',
+    department: 'Science & Mathematics',
+    experience: '8 years',
+    classes: 4,
+    avatar: 'https://i.pravatar.cc/150?u=sarah'
+  }
 
   const getAvatarUrl = (userId: string) => {
     const seed = encodeURIComponent(userId)
@@ -110,7 +122,7 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <div className="flex items-center gap-4 mb-3">
                     <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#8C7B65]/20">
                       <img 
-                        src={getAvatarUrl(userData?.id || userData?.name || 'admin')} 
+                        src={userType === 'teacher' ? teacherData.avatar : getAvatarUrl(userData?.id || userData?.name || 'admin')} 
                         alt="Profile" 
                         className="w-full h-full object-cover"
                       />
@@ -118,10 +130,10 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     <div className="flex-1">
                       <div className={`text-sm font-semibold ${
                         isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                      }`}>{userData?.name || 'Admin User'}</div>
+                      }`}>{userType === 'teacher' ? teacherData.name : (userData?.name || 'Admin User')}</div>
                       <div className={`text-xs font-medium ${
                         isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                      }`}>Administrator</div>
+                      }`}>{userType === 'teacher' ? teacherData.subject : 'Administrator'}</div>
                     </div>
                     <button 
                       onClick={() => setShowProfileDetails(!showProfileDetails)}
@@ -144,76 +156,168 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         <div>
                           <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
                             isDarkMode ? 'text-zinc-300' : 'text-gray-700'
-                          }`}>Institute Details</h4>
+                          }`}>{userType === 'teacher' ? 'Teacher Details' : 'Institute Details'}</h4>
                           <div className="grid grid-cols-1 gap-2 text-xs">
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Name:</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                              }`}>Osmium AI Institute</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Email:</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                              }`}>contact@osmium.co.in</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Phone:</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                              }`}>+91 98765 43210</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Website:</span>
-                              <a href="https://osmium.co.in" target="_blank" rel="noopener noreferrer" className="text-[#8C7B65] font-semibold hover:underline transition-all duration-200 hover:text-[#A0906F]">osmium.co.in</a>
-                            </div>
+                            {userType === 'teacher' ? (
+                              <>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Name:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{teacherData.name}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Email:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{teacherData.email}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Phone:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{teacherData.phone}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Department:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{teacherData.department}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Experience:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{teacherData.experience}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Classes:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{teacherData.classes} Active</span>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Name:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>Osmium AI Institute</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Email:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>contact@osmium.co.in</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Phone:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>+91 98765 43210</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Website:</span>
+                                  <a href="https://osmium.co.in" target="_blank" rel="noopener noreferrer" className="text-[#8C7B65] font-semibold hover:underline transition-all duration-200 hover:text-[#A0906F]">osmium.co.in</a>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                         
                         <div>
                           <h4 className={`text-xs font-bold uppercase tracking-wider mb-3 ${
                             isDarkMode ? 'text-zinc-300' : 'text-gray-700'
-                          }`}>Authorized Signatory</h4>
+                          }`}>{userType === 'teacher' ? 'Institute' : 'Authorized Signatory'}</h4>
                           <div className="grid grid-cols-1 gap-2 text-xs">
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Name:</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                              }`}>{userData?.name || 'Admin User'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Email:</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                              }`}>{userData?.email || 'admin@osmium.co.in'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Phone:</span>
-                              <span className={`font-semibold ${
-                                isDarkMode ? 'text-zinc-100' : 'text-gray-900'
-                              }`}>+91 98765 43210</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className={`font-medium ${
-                                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
-                              }`}>Role:</span>
-                              <span className="text-[#8C7B65] font-semibold">{userData?.type || 'Administrator'}</span>
-                            </div>
+                            {userType === 'teacher' ? (
+                              <>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Name:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>Osmium AI Institute</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Email:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>contact@osmium.co.in</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Phone:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>+91 98765 43210</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Website:</span>
+                                  <a href="https://osmium.co.in" target="_blank" rel="noopener noreferrer" className="text-[#8C7B65] font-semibold hover:underline transition-all duration-200 hover:text-[#A0906F]">osmium.co.in</a>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Name:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.name || 'Admin User'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Email:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>{userData?.email || 'admin@osmium.co.in'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Phone:</span>
+                                  <span className={`font-semibold ${
+                                    isDarkMode ? 'text-zinc-100' : 'text-gray-900'
+                                  }`}>+91 98765 43210</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={`font-medium ${
+                                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                  }`}>Role:</span>
+                                  <span className="text-[#8C7B65] font-semibold">{userData?.type || 'Administrator'}</span>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                         

@@ -1,20 +1,25 @@
-import { Suspense } from 'react';
-import { Metadata } from 'next';
-import TeacherDashboardLayout from '@/components/dashboard/teacher/TeacherDashboardLayout';
-import TeacherDashboardPage from '@/components/dashboard/teacher/TeacherDashboardPage';
-import LoadingSpinner from '@/components/dashboard/shared/LoadingSpinner';
+import { Suspense } from 'react'
+import { Metadata } from 'next'
+import dynamic from 'next/dynamic'
+import TeacherDashboard from '@/components/dashboard/teacher/TeacherDashboard'
+import LoadingSpinner from '@/components/dashboard/shared/LoadingSpinner'
+
+const DashboardLayout = dynamic(() => import('@/components/dashboard/shared/DashboardLayout'), {
+  ssr: true,
+  loading: () => <LoadingSpinner />
+})
 
 export const metadata: Metadata = {
   title: 'Teacher Dashboard - Osmium',
   description: 'Teacher dashboard with analytics and test management',
-};
+}
 
-export default function TeacherDashboard() {
+export default function TeacherDashboardPage() {
   return (
-    <TeacherDashboardLayout>
+    <DashboardLayout userType="teacher">
       <Suspense fallback={<LoadingSpinner />}>
-        <TeacherDashboardPage />
+        <TeacherDashboard />
       </Suspense>
-    </TeacherDashboardLayout>
-  );
+    </DashboardLayout>
+  )
 }

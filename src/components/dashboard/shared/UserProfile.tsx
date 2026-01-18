@@ -11,7 +11,11 @@ interface UserData {
   id?: string
 }
 
-function UserProfile() {
+interface UserProfileProps {
+  userType?: 'admin' | 'teacher'
+}
+
+function UserProfile({ userType = 'admin' }: UserProfileProps) {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -44,6 +48,14 @@ function UserProfile() {
     return `https://api.dicebear.com/9.x/glass/svg?seed=${seed}&backgroundColor=${backgroundColor}&backgroundType=${backgroundType}&backgroundRotation=${backgroundRotation}`
   }
 
+  const teacherData = {
+    name: 'Dr. Sarah Johnson',
+    subject: 'Mathematics',
+    classes: 4,
+    experience: '8y exp',
+    avatar: 'https://i.pravatar.cc/150?u=sarah'
+  }
+
   return (
     <>
       <div className={`flex-shrink-0 sticky bottom-0 p-3 border-t ${
@@ -60,20 +72,20 @@ function UserProfile() {
           onClick={handleProfileClick}
         >
           <img 
-            src={getAvatarUrl(userData?.id || userData?.name || 'admin')} 
+            src={userType === 'teacher' ? teacherData.avatar : getAvatarUrl(userData?.id || userData?.name || 'admin')} 
             alt="" 
-            className="w-10 h-10 rounded-full flex-shrink-0"
+            className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
           />
           <div className="flex-1 min-w-0">
             <div className={`text-sm font-medium truncate ${
               mounted && isDarkMode ? 'text-zinc-100' : 'text-gray-900'
             }`}>
-              {userData?.name || 'Admin User'}
+              {userType === 'teacher' ? teacherData.name : (userData?.name || 'Admin User')}
             </div>
             <div className={`text-xs truncate ${
               mounted && isDarkMode ? 'text-zinc-400' : 'text-gray-500'
             }`}>
-              Administrator
+              {userType === 'teacher' ? teacherData.subject : 'Administrator'}
             </div>
           </div>
           <div className={`flex-shrink-0 ${
@@ -86,7 +98,8 @@ function UserProfile() {
       
       <SettingsModal 
         isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+        onClose={() => setIsSettingsOpen(false)}
+        userType={userType}
       />
     </>
   )

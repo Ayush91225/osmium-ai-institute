@@ -1,8 +1,13 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import ExamsPage from '@/components/dashboard/teacher/ExamsPage'
-import TeacherDashboardLayout from '@/components/dashboard/teacher/TeacherDashboardLayout'
 import LoadingSpinner from '@/components/dashboard/shared/LoadingSpinner'
+
+const DashboardLayout = dynamic(() => import('@/components/dashboard/shared/DashboardLayout'), {
+  ssr: true,
+  loading: () => <LoadingSpinner />
+})
 
 export const metadata: Metadata = {
   title: 'Exam & Tests | Osmium AI Institute',
@@ -12,10 +17,10 @@ export const metadata: Metadata = {
 
 export default function Exams() {
   return (
-    <TeacherDashboardLayout>
+    <DashboardLayout userType="teacher">
       <Suspense fallback={<LoadingSpinner />}>
         <ExamsPage />
       </Suspense>
-    </TeacherDashboardLayout>
+    </DashboardLayout>
   )
 }

@@ -1,243 +1,246 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useDarkMode } from '@/contexts/DarkModeContext';
+
+interface Message {
+  content: string
+  isUser: boolean
+  timestamp: string
+}
+
+interface ChatSession {
+  id: number
+  title: string
+  messages: Message[]
+  timestamp: string
+  preview: string
+}
 
 export default function AIMentorPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const { isDarkMode } = useDarkMode();
+  const [mounted, setMounted] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const data = localStorage.getItem('user_data');
-      if (data) {
-        try {
-          setUserData(JSON.parse(data));
-        } catch {
-          // Handle invalid JSON
-        }
-      }
-    }
+    setMounted(true);
+    const saved = localStorage.getItem('teacherAIMentorHistory');
+    if (saved) setChatHistory(JSON.parse(saved));
   }, []);
 
-  const getAvatarUrl = (userId: string) => {
-    const seed = encodeURIComponent(userId);
-    const backgroundColor = '4747eb,4762eb,477eeb,4799eb,47b4eb,47d0eb,47eb47,47eb62,47eb7e,47eb99,47ebb4,47ebd0,47ebeb,6247eb,62eb47,7e47eb,7eeb47,9947eb,99eb47,b447eb,b4eb47,d047eb,d0eb47,eb4747,eb4762,eb477e,eb4799,eb47d0,eb47eb,eb6247,eb7e47,eb9947,ebb447,ebd047,ebeb47,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9';
-    const backgroundType = 'gradientLinear';
-    const backgroundRotation = '0,360,10,20,30';
-    
-    return `https://api.dicebear.com/9.x/glass/svg?seed=${seed}&backgroundColor=${backgroundColor}&backgroundType=${backgroundType}&backgroundRotation=${backgroundRotation}`;
+  const aiResponses = {
+    greetings: ["Hello! I'm your AI Teaching Assistant. How can I help you today?"],
+    quiz: ["I can help you generate quizzes! What topic and difficulty level would you like?"],
+    study: ["I can help you create teaching materials! What subject are you preparing?"],
+    default: ["I'm here to assist with your teaching needs. What would you like help with?"]
   };
 
+  const getAIResponse = (msg: string) => {
+    const lower = msg.toLowerCase();
+    if (lower.includes('hello') || lower.includes('hi')) return aiResponses.greetings[0];
+    if (lower.includes('quiz') || lower.includes('test')) return aiResponses.quiz[0];
+    if (lower.includes('study') || lower.includes('material')) return aiResponses.study[0];
+    return aiResponses.default[0];
+  };
+
+  const sendMessage = () => {
+    if (!chatInput.trim()) return;
+    
+    const currentInput = chatInput;
+    const userMsg: Message = { content: currentInput, isUser: true, timestamp: new Date().toISOString() };
+    setMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setShowWelcome(false);
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const aiMsg: Message = { content: getAIResponse(currentInput), isUser: false, timestamp: new Date().toISOString() };
+      setMessages(prev => [...prev, aiMsg]);
+      setIsTyping(false);
+    }, 1500);
+  };
+
+  const sendSuggestion = (text: string) => {
+    setChatInput(text);
+    setTimeout(() => sendMessage(), 100);
+  };
+
+  if (!mounted) return null;
+
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }} className="flex bg-[#F8F8F6]">
-      {/* Sidebar Overlay */}
-      <div 
-        className={`fixed top-0 left-0 w-full h-full bg-black/50 z-40 ${sidebarOpen ? 'block' : 'hidden'}`}
-        onClick={() => setSidebarOpen(false)}
-      />
-      
-      {/* Sidebar */}
-      <div className="w-[280px] flex flex-col justify-between overflow-y-auto h-screen fixed left-0 top-0 z-50 bg-[#faf8f6] border-r border-[#ebe8e2]" style={{ fontFamily: 'Inter, sans-serif', padding: '24px 0' }}>
-        <div className="flex-1">
-          {/* Logo Container */}
-          <div className="flex items-center justify-between mb-8" style={{ padding: '0 20px' }}>
-            <div className="flex items-center gap-2">
-              <img src="https://osmium.co.in/images/logo.png" alt="Osmium Logo" className="w-8 h-8 object-contain" />
-              <span className="font-medium text-xl tracking-tight text-gray-900" style={{ fontFamily: 'Inter, sans-serif' }}>Osmium</span>
-            </div>
-          </div>
-          
-          {/* Navigation */}
-          <div>
-            <div className="uppercase tracking-wide mb-2 text-[#8b8b8b]" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', padding: '0 20px', margin: '16px 0 8px 0' }}>General</div>
-            
-            <nav>
-              <Link href="/dashboard/teacher" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                  <rect width="256" height="256" fill="none" />
-                  <path d="M120,56v48a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V56A16,16,0,0,1,56,40h48A16,16,0,0,1,120,56Zm80-16H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm-96,96H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm96,0H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,200,136Z" />
-                </svg>
-                Dashboard
-              </Link>
-              
-              <Link href="/dashboard/teacher/students" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                  <rect width="256" height="256" fill="none" />
-                  <path d="M164.47,195.63a8,8,0,0,1-6.7,12.37H10.23a8,8,0,0,1-6.7-12.37,95.83,95.83,0,0,1,47.22-37.71,60,60,0,1,1,66.5,0A95.83,95.83,0,0,1,164.47,195.63Zm87.91-.15a95.87,95.87,0,0,0-47.13-37.56A60,60,0,0,0,144.7,54.59a4,4,0,0,0-1.33,6A75.83,75.83,0,0,1,147,150.53a4,4,0,0,0,1.07,5.53,112.32,112.32,0,0,1,29.85,30.83,23.92,23.92,0,0,1,3.65,16.47,4,4,0,0,0,3.95,4.64h60.3a8,8,0,0,0,7.73-5.93A8.22,8.22,0,0,0,252.38,195.48Z" />
-                </svg>
-                Student Management
-              </Link>
-              
-              <Link href="/dashboard/teacher/projects" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                  <rect width="256" height="256" fill="none" />
-                  <path d="M240,56V200a8,8,0,0,1-8,8H160a24,24,0,0,0-24,23.94,7.9,7.9,0,0,1-5.12,7.55A8,8,0,0,1,120,232a24,24,0,0,0-24-24H24a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8H88a32,32,0,0,1,32,32v87.73a8.17,8.17,0,0,0,7.47,8.25,8,8,0,0,0,8.53-8V80a32,32,0,0,1,32-32h64A8,8,0,0,1,240,56Z" />
-                </svg>
-                Project Management
-              </Link>
-              
-              <Link href="/dashboard/teacher/exams" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                  <rect width="256" height="256" fill="none" />
-                  <path d="M200,32H163.74a47.92,47.92,0,0,0-71.48,0H56A16,16,0,0,0,40,48V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm-72,0a32,32,0,0,1,32,32H96A32,32,0,0,1,128,32Zm32,128H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Zm0-32H96a8,8,0,0,1,0-16h64a8,8,0,0,1,0,16Z" />
-                </svg>
-                Exam & Tests
-              </Link>
-              
-              <Link href="/dashboard/teacher/ai-mentor" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline bg-[#e8e3da] text-[#2e2e2e] font-medium" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                  <rect width="256" height="256" fill="none" />
-                  <path d="M232.07,186.76a80,80,0,0,0-62.5-114.17A80,80,0,1,0,23.93,138.76l-7.27,24.71a16,16,0,0,0,19.87,19.87l24.71-7.27a80.39,80.39,0,0,0,25.18,7.35,80,80,0,0,0,108.34,40.65l24.71,7.27a16,16,0,0,0,19.87-19.86Zm-16.25,1.47L224,216l-27.76-8.17a8,8,0,0,0-6,.63,64.05,64.05,0,0,1-85.87-24.88A79.93,79.93,0,0,0,174.7,89.71a64,64,0,0,1,41.75,92.48A8,8,0,0,0,215.82,188.23Z" />
-                </svg>
-                AI Mentor
-              </Link>
-              
-              <Link href="/dashboard/teacher/analytics" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                  <rect width="256" height="256" fill="none" />
-                  <path d="M226.53,56.41l-96-32a8,8,0,0,0-5.06,0l-96,32A8,8,0,0,0,24,64v80a8,8,0,0,0,16,0V75.1L73.59,86.29a64,64,0,0,0,20.65,88.05c-18,7.06-33.56,19.83-44.94,37.29a8,8,0,1,0,13.4,8.74C77.77,197.25,101.57,184,128,184s50.23,13.25,65.3,36.37a8,8,0,0,0,13.4-8.74c-11.38-17.46-27-30.23-44.94-37.29a64,64,0,0,0,20.65-88l44.12-14.7a8,8,0,0,0,0-15.18ZM176,120A48,48,0,1,1,89.35,91.55l36.12,12a8,8,0,0,0,5.06,0l36.12-12A47.89,47.89,0,0,1,176,120Z" />
-              </svg>
-              Analytics
-              </Link>
-            </nav>
-            
-            <div className="uppercase tracking-wide mb-2 mt-4 text-[#8b8b8b]" style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.4px', padding: '0 20px', margin: '16px 0 8px 0' }}>Support</div>
-            
-            <div className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                <rect width="256" height="256" fill="none" />
-                <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216Z" />
-              </svg>
-              Notification
-            </div>
-            
-            <Link href="/dashboard/teacher/help" className="flex items-center gap-3 cursor-pointer transition-all duration-200 rounded-lg no-underline text-[#5a5a5a] hover:bg-[#f0ede8]" style={{ padding: '12px 24px', margin: '0 12px', fontSize: '14px' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                <rect width="256" height="256" fill="none" />
-                <path d="M232,128v80a40,40,0,0,1-40,40H136a8,8,0,0,1,0-16h56a24,24,0,0,0,24-24H192a24,24,0,0,1-24-24V144a24,24,0,0,1,24-24h23.65A88,88,0,0,0,66,65.54A87.29,87.29,0,0,0,40.36,120H64a24,24,0,0,1,24,24v40a24,24,0,0,1-24,24H48a24,24,0,0,1-24-24V128A104.11,104.11,0,0,1,201.89,54.66A103.41,103.41,0,0,1,232,128Z" />
-              </svg>
-              Help & Support
-            </Link>
-          </div>
-        </div>
-        
-        {/* Sidebar Bottom - User Profile */}
-        <div className="border-t pt-4 border-[#ebe8e2]" style={{ padding: '16px 8px 0 8px' }}>
-          <div className="flex items-center gap-2.5 py-3 px-4 mt-4 rounded-lg bg-white cursor-pointer">
-            <img src={getAvatarUrl(userData?.id || userData?.name || 'teacher')} alt="User" className="w-8 h-8 rounded-full" />
-            <div className="flex-1">
-              <div className="text-[13px] font-medium text-[#2e2e2e]">Suman</div>
-              <div className="text-[11px] text-[#8b8b8b] mt-0.5"></div>
-            </div>
-            <div className="w-5 h-5 flex items-center justify-center cursor-pointer text-sm flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#abaaaa" viewBox="0 0 256 256">
-                <path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className={`${sidebarCollapsed ? 'ml-0 w-full' : 'ml-[280px] w-[calc(100%-280px)]'} h-screen flex flex-col overflow-hidden max-md:ml-0 max-md:w-full`}>
-        {/* Toggle Button */}
-        <button 
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className={`fixed top-5 left-5 z-[60] w-10 h-10 bg-white border border-[#e5e7eb] rounded-lg ${sidebarCollapsed ? 'flex' : 'hidden'} items-center justify-center cursor-pointer shadow-sm hover:bg-[#f9fafb] hover:border-[#d1d5db] transition-all duration-200 max-md:w-8 max-md:h-8 max-md:top-4 max-md:left-4`}
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-        </button>
-
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 min-h-[56px] px-8 py-6 border-b border-[#e5e5e5] bg-[#faf8f6] flex-shrink-0 max-md:px-5 max-md:py-4">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hidden max-md:block bg-white border border-[#e5e5e5] rounded-lg p-2 cursor-pointer hover:bg-[#f5f5f5]"
-            >
-              <svg width="20" height="20" viewBox="0 0 256 256" fill="#292929">
-                <path d="M93.31,70,28,128l65.27,58a8,8,0,1,1-10.62,12l-72-64a8,8,0,0,1,0-12l72-64A8,8,0,1,1,93.31,70Zm152,52-72-64a8,8,0,0,0-10.62,12L228,128l-65.27,58a8,8,0,1,0,10.62,12l72-64a8,8,0,0,0,0-12Z"/>
-              </svg>
-            </button>
-            <h1 className="text-lg font-medium text-[#141414] tracking-[0.1px]">AI Mentor</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="inline-flex items-center gap-2 py-1.5 px-3 rounded-lg bg-[#F3F1EE] border border-[rgba(0,0,0,0.04)] cursor-pointer text-[13px] font-medium text-[#141414] transition-all duration-[120ms] hover:bg-[#e8e3da] active:translate-y-px">
+    <div className={`h-screen flex flex-col ${
+      isDarkMode ? 'bg-zinc-950' : 'bg-[#F8F8F6]'
+    }`} style={{ fontFamily: "'Inter', sans-serif" }}>
+      {/* Header */}
+      <div className={`px-8 py-6 border-b ${
+        isDarkMode ? 'border-zinc-800' : 'border-[#e5e5e5]'
+      }`}>
+        <div className="flex items-center justify-between">
+          <h1 className={`text-2xl font-semibold ${
+            isDarkMode ? 'text-zinc-100' : 'text-[#141414]'
+          }`}>AI Mentor</h1>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => window.location.reload()} className={`inline-flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+              isDarkMode ? 'bg-zinc-800 border border-zinc-700 text-zinc-200 hover:bg-zinc-700' : 'bg-[#F3F1EE] border border-[rgba(0,0,0,0.04)] text-[#141414] hover:bg-[#e8e3da]'
+            }`}>
               <svg width="16" height="16" viewBox="0 0 24 24">
-                <path d="M12 5v14M5 12h14" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               </svg>
               New Chat
             </button>
-            <button className="w-9 h-9 rounded-full inline-grid place-items-center bg-[#F3F1EE] border border-[rgba(0,0,0,0.04)] cursor-pointer transition-all duration-[120ms]">
-              <svg className="w-4 h-4 stroke-[#141414] stroke-[1.6] fill-none" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
+            <button type="button" onClick={() => setShowHistory(true)} aria-label="View chat history" className={`w-9 h-9 rounded-lg flex items-center justify-center border transition-colors ${
+              isDarkMode ? 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700' : 'bg-[#F3F1EE] border-[rgba(0,0,0,0.04)] hover:bg-[#e8e3da]'
+            }`}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
               </svg>
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto py-10 px-5">
-          <div className="text-center mb-20">
-            <h1 className="text-[40px] font-normal text-[#999] m-0" style={{ fontFamily: "'Times New Roman', serif" }}>
-              Welcome back, <span className="text-[#1a1a1a]">Suman</span>
-            </h1>
-          </div>
-          <div className="flex gap-4 flex-wrap justify-center max-w-[720px] mx-auto px-5">
-            <button className="py-3 px-6 border-none rounded-[10px] text-sm font-normal cursor-pointer transition-all duration-300 bg-[#F6ECE9] text-[#503D3A]" style={{ fontFamily: "'Geist', sans-serif" }}>
-              Review you weak areas
-            </button>
-            <button className="py-3 px-6 border-none rounded-[10px] text-sm font-normal cursor-pointer transition-all duration-300 bg-[#EDEEE4] text-[#4E5035]" style={{ fontFamily: "'Geist', sans-serif" }}>
-              Challenging topics review
-            </button>
-            <button className="py-3 px-6 border-none rounded-[10px] text-sm font-normal cursor-pointer transition-all duration-300 bg-[#E6F0EB] text-[#35483D]" style={{ fontFamily: "'Geist', sans-serif" }}>
-              Generate quiz on kinematics
-            </button>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="px-6 pt-4 pb-6 bg-[#faf8f6] flex-shrink-0 max-md:px-4 max-md:pt-3 max-md:pb-5">
-          <div className="max-w-[720px] mx-auto w-full">
-            <div className="bg-white border border-[#e5e5e5] rounded-2xl px-[18px] py-[14px]">
-              <input 
-                type="text" 
-                className="w-full border-none outline-none text-sm text-[#333] mb-[14px]" 
-                style={{ fontFamily: "'Inter', sans-serif" }}
-                placeholder="What's on your mind?"
-              />
-              <div className="flex gap-3 items-center">
-                <button className="flex items-center gap-1 py-1.5 px-2.5 border border-[#e5e5e5] rounded-md bg-[#f8f9fa] text-xs text-[#666] cursor-pointer transition-all duration-200 hover:bg-[#f0f0f0] hover:border-[#d0d0d0]">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  Notes
-                </button>
-                <button className="flex items-center gap-1 py-1.5 px-2.5 border border-[#f4d35e] rounded-md bg-[#fff8e6] text-xs text-[#8a7433] cursor-pointer transition-all duration-200 hover:bg-[#fff3d6]">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                  Quiz
-                </button>
-                <button className="ml-auto w-8 h-8 rounded-full bg-[#8b7355] border-none flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-[#6b5d4f] hover:scale-105">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
-                    <line x1="128" y1="216" x2="128" y2="40" fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/>
-                    <polyline points="56 112 128 40 200 112" fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/>
-                  </svg>
-                </button>
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col items-center justify-center px-5 overflow-hidden">
+        {showWelcome ? (
+          <>
+            <div className="text-center mb-12">
+              <h2 className={`text-4xl font-normal mb-2 ${
+                isDarkMode ? 'text-zinc-400' : 'text-[#999]'
+              }`} style={{ fontFamily: "'Times New Roman', serif" }}>
+                Welcome back, <span className={isDarkMode ? 'text-zinc-100' : 'text-[#1a1a1a]'}>Suman</span>
+              </h2>
+            </div>
+            <div className="flex gap-4 flex-wrap justify-center max-w-[720px]">
+              <button type="button" onClick={() => sendSuggestion('Generate quiz for my class')} className={`py-3 px-6 rounded-lg text-sm transition-all ${
+                isDarkMode ? 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700' : 'bg-[#F6ECE9] text-[#503D3A] hover:bg-[#f0e0dc]'
+              }`}>
+                Generate quiz for class
+              </button>
+              <button type="button" onClick={() => sendSuggestion('Create teaching materials')} className={`py-3 px-6 rounded-lg text-sm transition-all ${
+                isDarkMode ? 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700' : 'bg-[#EDEEE4] text-[#4E5035] hover:bg-[#e3e4da]'
+              }`}>
+                Create teaching materials
+              </button>
+              <button type="button" onClick={() => sendSuggestion('Help with lesson planning')} className={`py-3 px-6 rounded-lg text-sm transition-all ${
+                isDarkMode ? 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700' : 'bg-[#E6F0EB] text-[#35483D] hover:bg-[#dce8e1]'
+              }`}>
+                Help with lesson planning
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="w-full max-w-3xl flex-1 overflow-y-auto py-4">
+            {messages.map((msg: Message, idx: number) => (
+              <div key={idx} className={`flex gap-2 mb-4 ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${msg.isUser ? 'bg-gradient-to-br from-[#d4a574] to-[#c48a5c] text-white order-2' : 'bg-[#e8e3da] text-[#8b7355]'}`}>
+                  {msg.isUser ? 'S' : 'AI'}
+                </div>
+                <div className={`max-w-[75%] px-4 py-2.5 text-sm rounded-xl ${msg.isUser ? 'bg-[#8b7355] text-white rounded-br-md' : isDarkMode ? 'bg-zinc-800 text-white rounded-bl-md' : 'bg-[#f4f2ef] text-gray-900 rounded-bl-md'}`}>
+                  {msg.content}
+                </div>
               </div>
+            ))}
+            {isTyping && (
+              <div className="flex gap-2 mb-4">
+                <div className="w-7 h-7 rounded-full bg-[#e8e3da] text-[#8b7355] flex items-center justify-center text-xs font-semibold">AI</div>
+                <div className={`px-4 py-2.5 rounded-xl rounded-bl-md ${isDarkMode ? 'bg-zinc-800' : 'bg-[#f4f2ef]'}`}>
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0s]"></span>
+                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce [animation-delay:0.4s]"></span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Input Area */}
+      <div className={`px-6 pt-4 pb-6 flex-shrink-0 ${
+        isDarkMode ? 'bg-zinc-950' : 'bg-[#faf8f6]'
+      }`}>
+        <div className="max-w-[720px] mx-auto w-full">
+          <div className={`rounded-2xl px-5 py-4 border ${
+            isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-[#e5e5e5]'
+          }`}>
+            <input 
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+              className={`w-full border-none outline-none text-sm mb-3 bg-transparent ${
+                isDarkMode ? 'text-zinc-200 placeholder-zinc-500' : 'text-[#333] placeholder-gray-400'
+              }`}
+              placeholder="What's on your mind?"
+            />
+            <div className="flex gap-3 items-center">
+              <button type="button" onClick={() => setChatInput('Notes: ')} className={`flex items-center gap-1 py-1.5 px-2.5 border rounded-md text-xs transition-all ${
+                isDarkMode ? 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'border-[#e5e5e5] bg-[#f8f9fa] text-[#666] hover:bg-[#f0f0f0]'
+              }`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Notes
+              </button>
+              <button type="button" onClick={() => setChatInput('Generate a quiz on ')} className={`flex items-center gap-1 py-1.5 px-2.5 border rounded-md text-xs transition-all ${
+                isDarkMode ? 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'border-[#f4d35e] bg-[#fff8e6] text-[#8a7433] hover:bg-[#fff3d6]'
+              }`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Quiz
+              </button>
+              <button type="button" onClick={sendMessage} aria-label="Send message" className="ml-auto w-8 h-8 rounded-full bg-[#8C7B65] flex items-center justify-center transition-all hover:bg-[#7A6B58] hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="20" height="20">
+                  <line x1="128" y1="216" x2="128" y2="40" fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/>
+                  <polyline points="56 112 128 40 200 112" fill="none" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* History Panel */}
+      {showHistory && (
+        <>
+          <div onClick={() => setShowHistory(false)} className="fixed inset-0 bg-black/50 z-40"></div>
+          <div className={`fixed top-0 right-0 w-full sm:w-96 h-full z-50 flex flex-col ${isDarkMode ? 'bg-zinc-900' : 'bg-white'}`}>
+            <div className={`flex items-center justify-between p-6 border-b ${isDarkMode ? 'border-zinc-800' : 'border-gray-200'}`}>
+              <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Chat History</h3>
+              <button type="button" onClick={() => setShowHistory(false)} aria-label="Close chat history" className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              {chatHistory.length === 0 ? (
+                <p className={`text-center italic ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>No chat history yet</p>
+              ) : (
+                chatHistory.map((chat: ChatSession) => (
+                  <div key={chat.id} className={`p-4 rounded-xl mb-3 cursor-pointer border ${isDarkMode ? 'border-zinc-800 hover:bg-zinc-800' : 'border-gray-200 hover:bg-gray-50'}`}>
+                    <div className={`font-medium mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{chat.title}</div>
+                    <div className={`text-sm mb-1 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>{chat.preview}</div>
+                    <div className={`text-xs ${isDarkMode ? 'text-zinc-500' : 'text-gray-400'}`}>{new Date(chat.timestamp).toLocaleDateString()}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

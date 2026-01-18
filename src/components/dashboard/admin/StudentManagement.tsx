@@ -10,7 +10,11 @@ import StudentTable from './StudentTable'
 import Pagination from './Pagination'
 import AddStudentModal from './AddStudentModal'
 
-export default function StudentManagement() {
+interface StudentManagementProps {
+  userType?: 'admin' | 'teacher'
+}
+
+export default function StudentManagement({ userType = 'admin' }: StudentManagementProps) {
   const { 
     viewMode, 
     paginatedStudents, 
@@ -27,7 +31,7 @@ export default function StudentManagement() {
   } = useStudents()
 
   return (
-    <DashboardLayout>
+    <DashboardLayout userType={userType}>
       <div className="space-y-6">
         <StudentHeader />
         <StudentStats />

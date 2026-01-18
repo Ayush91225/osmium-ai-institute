@@ -27,16 +27,12 @@ export default function TeacherDashboardLayout({ children }: TeacherDashboardLay
   }, [])
 
   useEffect(() => {
-    const handleBodyOverflow = () => {
-      if (typeof document !== 'undefined' && document.body) {
-        document.body.style.overflow = sidebarOpen ? 'hidden' : 'unset'
-      }
+    if (typeof window !== 'undefined' && document?.body) {
+      document.body.style.overflow = sidebarOpen ? 'hidden' : 'unset'
     }
 
-    handleBodyOverflow()
-
     return () => {
-      if (typeof document !== 'undefined' && document.body) {
+      if (typeof window !== 'undefined' && document?.body) {
         document.body.style.overflow = 'unset'
       }
     }
@@ -48,7 +44,6 @@ export default function TeacherDashboardLayout({ children }: TeacherDashboardLay
     }`} suppressHydrationWarning>
       <TeacherSidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
-      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -57,7 +52,6 @@ export default function TeacherDashboardLayout({ children }: TeacherDashboardLay
         />
       )}
       
-      {/* Main Content */}
       <main className="min-h-screen overflow-y-auto lg:ml-[280px] relative">
         <MobileToggle onClick={toggleSidebar} />
         {children}
