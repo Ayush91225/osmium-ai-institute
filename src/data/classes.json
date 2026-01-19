@@ -1,0 +1,129 @@
+[
+  {
+    "id": "CLS001",
+    "name": "Grade 10A",
+    "code": "10A",
+    "branchId": "BR001",
+    "courseId": "CR002",
+    "department": "Science",
+    "programType": "school",
+    "academicYear": "2024-25",
+    "section": "A",
+    "capacity": 40,
+    "currentStrength": 1,
+    "subjects": ["SUB001", "SUB002", "SUB003", "SUB004"],
+    "subjectTeachers": [
+      { "subjectId": "SUB001", "teacherId": "TCH001" },
+      { "subjectId": "SUB002", "teacherId": "TCH002" }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-15",
+    "createdBy": "Admin",
+    "updatedAt": "2024-01-15"
+  },
+  {
+    "id": "CLS002",
+    "name": "Grade 11B",
+    "code": "11B",
+    "branchId": "BR001",
+    "courseId": "CR004",
+    "department": "Science",
+    "programType": "school",
+    "academicYear": "2024-25",
+    "section": "B",
+    "capacity": 40,
+    "currentStrength": 1,
+    "subjects": ["SUB001", "SUB002", "SUB003", "SUB004"],
+    "subjectTeachers": [
+      { "subjectId": "SUB002", "teacherId": "TCH002" },
+      { "subjectId": "SUB003", "teacherId": "TCH003" }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-10",
+    "createdBy": "Admin",
+    "updatedAt": "2024-01-10"
+  },
+  {
+    "id": "CLS003",
+    "name": "Grade 12A",
+    "code": "12A",
+    "branchId": "BR001",
+    "courseId": "CR004",
+    "department": "Science",
+    "programType": "school",
+    "academicYear": "2024-25",
+    "section": "A",
+    "capacity": 40,
+    "currentStrength": 1,
+    "subjects": ["SUB001", "SUB002", "SUB005", "SUB004"],
+    "subjectTeachers": [
+      { "subjectId": "SUB001", "teacherId": "TCH001" },
+      { "subjectId": "SUB005", "teacherId": "TCH005" }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-05",
+    "createdBy": "Admin",
+    "updatedAt": "2024-01-05"
+  },
+  {
+    "id": "CLS004",
+    "name": "Grade 9B",
+    "code": "9B",
+    "branchId": "BR001",
+    "courseId": "CR002",
+    "department": "Science",
+    "programType": "school",
+    "academicYear": "2024-25",
+    "section": "B",
+    "capacity": 35,
+    "currentStrength": 1,
+    "subjects": ["SUB001", "SUB002", "SUB003", "SUB004"],
+    "subjectTeachers": [
+      { "subjectId": "SUB001", "teacherId": "TCH001" }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-08",
+    "createdBy": "Admin",
+    "updatedAt": "2024-01-08"
+  },
+  {
+    "id": "CLS005",
+    "name": "Grade 11A",
+    "code": "11A",
+    "branchId": "BR001",
+    "courseId": "CR004",
+    "department": "Commerce",
+    "programType": "school",
+    "academicYear": "2024-25",
+    "section": "A",
+    "capacity": 40,
+    "currentStrength": 1,
+    "subjects": ["SUB001", "SUB004"],
+    "subjectTeachers": [
+      { "subjectId": "SUB001", "teacherId": "TCH001" }
+    ],
+    "status": "active",
+    "createdAt": "2024-01-12",
+    "createdBy": "Admin",
+    "updatedAt": "2024-01-12"
+  },
+  {
+    "id": "CLS006",
+    "name": "Grade 10C",
+    "code": "10C",
+    "branchId": "BR001",
+    "courseId": "CR002",
+    "department": "Arts",
+    "programType": "school",
+    "academicYear": "2024-25",
+    "section": "C",
+    "capacity": 35,
+    "currentStrength": 1,
+    "subjects": ["SUB001", "SUB004"],
+    "subjectTeachers": [],
+    "status": "active",
+    "createdAt": "2024-01-20",
+    "createdBy": "Admin",
+    "updatedAt": "2024-01-20"
+  }
+]

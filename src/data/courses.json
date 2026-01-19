@@ -1,0 +1,38 @@
+[
+  {
+    "id": "CR001",
+    "name": "B.Tech Computer Science",
+    "code": "CSE",
+    "programType": "ug",
+    "duration": "4 years",
+    "branchId": "BR001",
+    "status": "active"
+  },
+  {
+    "id": "CR002",
+    "name": "Class 10 CBSE",
+    "code": "X-CBSE",
+    "programType": "school",
+    "duration": "1 year",
+    "branchId": "BR001",
+    "status": "active"
+  },
+  {
+    "id": "CR003",
+    "name": "JEE Main + Advanced",
+    "code": "JEE",
+    "programType": "coaching",
+    "duration": "2 years",
+    "branchId": "BR002",
+    "status": "active"
+  },
+  {
+    "id": "CR004",
+    "name": "Class 12 Science",
+    "code": "XII-SCI",
+    "programType": "school",
+    "duration": "1 year",
+    "branchId": "BR001",
+    "status": "active"
+  }
+]
