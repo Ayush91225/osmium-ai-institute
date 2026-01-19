@@ -319,14 +319,6 @@ export default function CreatePaperPage() {
                           {subjects.find(s => s.id === paperSubjects[0])?.name}
                         </span>
                       )}
-                      <select 
-                        value={q.type} 
-                        onChange={(e) => updateQuestion(q.id, 'type', e.target.value)}
-                        className={`px-2 py-1 rounded-md border text-xs ${isDarkMode ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-200' : 'bg-white border-gray-200 text-gray-900'}`}
-                      >
-                        <option value="mcq">MCQ</option>
-                        <option value="answer">Answer Type</option>
-                      </select>
                     </div>
                     <button 
                       onClick={() => removeQuestion(q.id)} 
@@ -373,18 +365,7 @@ export default function CreatePaperPage() {
                         </div>
                         <p className={`text-[10px] mt-1.5 ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>Select the correct option</p>
                       </div>
-                    ) : (
-                      <div>
-                        <label className={`block text-xs font-medium mb-1.5 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>Correct Answer</label>
-                        <textarea 
-                          value={q.correctAnswer || ''} 
-                          onChange={(e) => updateQuestion(q.id, 'correctAnswer', e.target.value)} 
-                          placeholder="Enter the correct answer..." 
-                          rows={2}
-                          className={`w-full px-3 py-2 rounded-lg border text-sm resize-none ${isDarkMode ? 'bg-zinc-800/50 border-zinc-700/50 text-zinc-200 placeholder:text-zinc-500' : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400'}`}
-                        />
-                      </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))}

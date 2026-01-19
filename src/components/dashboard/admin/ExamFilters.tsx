@@ -79,6 +79,7 @@ function ExamFilters() {
               <option value="Draft">Draft</option>
               <option value="Scheduled">Scheduled</option>
               <option value="Live">Live</option>
+              <option value="Completed">Completed</option>
             </select>
           </div>
 

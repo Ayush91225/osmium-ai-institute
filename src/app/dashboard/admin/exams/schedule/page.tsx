@@ -50,6 +50,7 @@ export default function ScheduleTestPage() {
           setTestName(test.title)
           setSelectedSubjects([test.subjectId])
           setSelectedClasses([test.classId])
+          setSelectedPaper(test.paperId || '')
           const [date, time] = test.date.split('T')
           setTestDate(date)
           setTestTime(time || '')
@@ -83,10 +84,12 @@ export default function ScheduleTestPage() {
         title: testName,
         type: testType as 'exam' | 'quiz' | 'mock',
         subjectId: selectedSubjects[0] || '',
+        classId: selectedClasses[0] || '',
         date: `${testDate}T${testTime}`,
         duration,
         totalMarks,
-        status: new Date(`${testDate}T${testTime}`) > new Date() ? 'upcoming' : 'ongoing' as 'upcoming' | 'ongoing' | 'completed'
+        status: new Date(`${testDate}T${testTime}`) > new Date() ? 'upcoming' : 'ongoing' as 'upcoming' | 'ongoing' | 'completed',
+        paperId: selectedPaper || undefined
       })
     } else {
       // Create test for each selected class
@@ -102,7 +105,8 @@ export default function ScheduleTestPage() {
           duration,
           totalMarks,
           status: new Date(`${testDate}T${testTime}`) > new Date() ? 'upcoming' : 'ongoing' as 'upcoming' | 'ongoing' | 'completed',
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          paperId: selectedPaper || undefined
         }
         db.addTest(test)
       })

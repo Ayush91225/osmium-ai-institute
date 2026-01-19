@@ -103,7 +103,7 @@ function ExamGrid() {
             <button 
               onClick={() => router.push(`/dashboard/admin/exams/create-paper`)}
               className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isDarkMode ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-              Edit Paper
+              Edit Questions
             </button>
             <button 
               onClick={() => router.push(`/dashboard/admin/exams/schedule?id=${exam.id}`)}
